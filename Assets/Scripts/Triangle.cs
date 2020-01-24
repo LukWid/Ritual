@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Triangle
+public class Triangle : GeometricShape
 {
     private Vertex a;
     private Vertex b;
@@ -61,11 +61,10 @@ public class Triangle
         ca.DivideEdge(frequency);
     }
 
-    public Mesh GenerateMesh()
+    public override void GenerateMesh()
     {
-        
-        return GenerateTriangleFace();
-        
+        Mesh shape = GenerateTriangleFace();
+        GenerateShape("triangle", shape);
     }
 
     private Mesh GenerateTriangleFace()

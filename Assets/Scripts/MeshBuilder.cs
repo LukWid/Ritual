@@ -10,12 +10,10 @@ public class MeshBuilder : MonoBehaviour
     [SerializeField]
     private GameObject hexTile;
     
-    private List<Mesh> meshes;
     private List<Triangle> triangles;
     
     void Start()
     {
-        meshes = new List<Mesh>();
         triangles = new List<Triangle>();
 
         float golden = (float)Constants.GoldenRatio;
@@ -68,52 +66,14 @@ public class MeshBuilder : MonoBehaviour
         triangles.Add(new Triangle(planeX.D,  planeY.C, planeZ.D));
         triangles.Add(new Triangle(planeZ.D, planeY.B, planeX.A));
 
-        GetMeshes();
-        CrateObject(meshes);
+        GenerateMesh();
     }
 
-    private void GetMeshes()
+    private void GenerateMesh()
     {
         foreach (var triangle in triangles)
         {
-            meshes.Add(triangle.GenerateMesh());
+           triangle.GenerateMesh();
         }
     }
-
-    private void CrateObject(List<Mesh> meshes)
-    {
-        GameObject go = new GameObject("Mesh");
-        go.transform.parent = transform;
-
-        go.AddComponent<MeshRenderer>().sharedMaterial = new Material(shader);
-        MeshFilter meshFilter = go.AddComponent<MeshFilter>();
-        meshFilter.mesh = CombineMeshes(meshes);
-        //SpawnHexes();
-    }
-
-    private void SpawnHexes()
-    {
-        foreach (var triangle in triangles)
-        {
-            //Vertex middle = triangle.GetMiddle();
-            //Instantiate(hexTile, middle.Position, triangle.GetDirection());
-
-        }
-    }
-
-    private Mesh CombineMeshes(List<Mesh> meshes)
-    {
-        var combine = new CombineInstance[meshes.Count];
-        for (int i = 0; i < meshes.Count; i++)
-        {
-            combine[i].mesh = meshes[i];
-            combine[i].transform = transform.localToWorldMatrix;
-        }
-
-        var mesh = new Mesh();
-        mesh.CombineMeshes(combine);
-        mesh.RecalculateNormals();
-        return mesh;
-    }
-    
 }

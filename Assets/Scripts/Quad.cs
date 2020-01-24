@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Quad
+public class Quad : GeometricShape
 {
     private Vertex a;
     private Vertex b;
@@ -24,7 +24,7 @@ public class Quad
 
     public void GenerateMesh(ref List<Mesh> meshes)
     {
-        meshes.Add(new Triangle(A, B, C).GenerateMesh()); 
-        meshes.Add(new Triangle(A, C, D).GenerateMesh());
+        new Triangle(A, B, C).GenerateMesh();
+        new Triangle(A, C, D).GenerateMesh();
     }
 }
