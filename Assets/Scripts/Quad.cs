@@ -22,9 +22,17 @@ public class Quad : GeometricShape
         this.D = d;
     }
 
-    public void GenerateMesh(ref List<Mesh> meshes)
+    public override void GenerateMesh()
     {
-        new Triangle(A, B, C).GenerateMesh();
-        new Triangle(A, C, D).GenerateMesh();
+        GameObject Triangle1 = new GameObject("Triangle1");
+        GameObject Triangle2 = new GameObject("Triangle2");
+
+        Triangle triangle1Script = Triangle1.AddComponent<Triangle>();
+        triangle1Script.Initialize(A, B, C);
+        triangle1Script.GenerateMesh();
+        
+        Triangle triangle2Script = Triangle2.AddComponent<Triangle>();
+        triangle2Script.Initialize(A, C, D);
+        triangle2Script.GenerateMesh();
     }
 }

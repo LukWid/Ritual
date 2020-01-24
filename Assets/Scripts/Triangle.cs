@@ -16,41 +16,22 @@ public class Triangle : GeometricShape
 
     private List<Triangle> dividedTriangles;
     
-    public Triangle(Vertex a, Vertex b, Vertex c, int subdivide = 0)
+    public Triangle()
+    {
+        
+    }
+
+    public void Initialize(Vertex a, Vertex b, Vertex c, int subdivide = 0)
     {
         this.a = a;
         this.b = b;
         this.c = c;
-        
-        ab = new Edge(a,b);
-        bc = new Edge(b,c);
-        ca = new Edge(c,a);
+
+        ab = new Edge(a, b);
+        bc = new Edge(b, c);
+        ca = new Edge(c, a);
 
         this.subdivide = subdivide;
-
-        //if (subdivide > 0)
-        {
-            Subdivide(3);
-        }
-    }
-
-    //In clockwise direction
-    public Triangle(Edge ab, Edge bc, Edge ca, int subdivide = 0)
-    {
-        this.ab = ab;
-        this.bc = bc;
-        this.ca = ca;
-
-        this.a = ab.A;
-        this.b = bc.A;
-        this.c = ca.A;
-
-        this.subdivide = subdivide;
-        
-       // if (subdivide > 0)
-        {
-            Subdivide(4);
-        }
     }
 
     private void Subdivide(int frequency)
