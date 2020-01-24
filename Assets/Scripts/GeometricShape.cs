@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GeometricShape : MonoBehaviour
 {
+    #region Public Methods
+
     public void GenerateShape(string shapeName, Mesh mesh)
     {
-       
-        gameObject.AddComponent<MeshRenderer>().sharedMaterial = new Material(Constants.StandardShader);
+        gameObject.AddComponent<MeshRenderer>().sharedMaterial = Constants.DefaultMaterial;
         MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
         meshFilter.mesh = mesh;
     }
@@ -17,4 +16,6 @@ public class GeometricShape : MonoBehaviour
     {
         throw new NotImplementedException();
     }
+
+    #endregion
 }
