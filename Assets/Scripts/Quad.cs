@@ -37,18 +37,16 @@ public class Quad : GeometricShape
 
     #region Public Methods
 
-    public override void GenerateMesh()
+    public override void GenerateMesh(GameObject gameObject)
     {
         GameObject Triangle1 = new GameObject("Triangle1");
         GameObject Triangle2 = new GameObject("Triangle2");
 
         Triangle triangle1Script = Triangle1.AddComponent<Triangle>();
-        triangle1Script.Initialize(A, B, C);
-        triangle1Script.GenerateMesh();
+        triangle1Script.Initialize(A, B, C, gameObject);
 
         Triangle triangle2Script = Triangle2.AddComponent<Triangle>();
-        triangle2Script.Initialize(A, C, D);
-        triangle2Script.GenerateMesh();
+        triangle2Script.Initialize(A, C, D, gameObject);
     }
 
     #endregion

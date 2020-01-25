@@ -40,9 +40,9 @@ public class Edge
             Vertex newVertex = new Vertex(Vector3.Lerp(A.Position, B.Position, 1.0f / frequency * i));
             dividedVertexArray[i] = newVertex;
 
-            GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            indicator.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-            indicator.transform.position = newVertex.Position;
+            //GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            //indicator.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            //indicator.transform.position = newVertex.Position;
         }
 
         return dividedVertexArray;

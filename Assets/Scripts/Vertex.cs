@@ -12,7 +12,8 @@ public class Vertex
 
     #region Public Properties
 
-    public Vector3 Position { get => position; set => position = value; }
+    public Vector3 Position { get => position; set {{ position = value; } }
+}
     public List<Triangle> FiguresWithCommonVertex { get; set; }
 
     #endregion
