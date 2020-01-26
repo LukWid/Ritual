@@ -80,11 +80,21 @@ public class MeshBuilder : MonoBehaviour
         
         GetVertices(allVertices);
         GetCommonVertices(commonVertices);
+
+        foreach (var vertex in commonVertices)
+        {
+            if (vertex.FiguresWithCommonVertex.Count == 5)
+            {
+                vertex.Truncate();
+            }
+        }
+        
         GetEdges(edges);
         
         //CastVerticesOnSphere();
         //DivideEdges();
         RecalculateMesh();
+        
     }
 
 
@@ -148,13 +158,6 @@ public class MeshBuilder : MonoBehaviour
         foreach (var triangle in baseTriangles)
         {
             triangle.GetCommonVertices(vertices);
-        }
-        
-        foreach (var vertex in vertices)
-        {
-            Debug.Log($"==========");
-            Debug.Log(vertex.FiguresWithCommonVertex.Count);
-          //  vertex.FiguresWithCommonVertex.ForEach(f=> Debug.Log($"    {f.gameObject.name}"));
         }
     }
     

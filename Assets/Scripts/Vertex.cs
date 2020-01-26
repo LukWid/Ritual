@@ -37,4 +37,32 @@ public class Vertex
     }
 
     #endregion
+
+    public void Truncate()
+    {
+        float x = 0f;
+        float y = 0f;
+        float z = 0f;
+        int count = 0;
+
+        foreach (var figure in FiguresWithCommonVertex)
+        {
+            List<Vertex> vertices = new List<Vertex>();
+            figure.GetVertices(vertices);
+            foreach (var vertex in vertices)
+            {
+                if (!vertex.Equals(this))
+                {
+                    count++;
+                    x += vertex.Position.x;
+                    y += vertex.Position.y;
+                    z += vertex.Position.z;
+                }
+            }
+        }
+
+        position.x = x / count;
+        position.y = y / count;
+        position.z = z / count;
+    }
 }

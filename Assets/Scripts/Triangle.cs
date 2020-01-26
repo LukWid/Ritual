@@ -121,6 +121,11 @@ public class Triangle : GeometricShape
             int index = vertices.IndexOf(toFind);
             vertices[index].FiguresWithCommonVertex.Add(this);
         }
+        else
+        {
+            toFind.FiguresWithCommonVertex.Add(this);
+            vertices.Add(toFind);
+        }
     }
     
     public void GetTriangles(List<Triangle> triangles)
@@ -190,10 +195,10 @@ public class Triangle : GeometricShape
         Vertex middlePoint = triangleHeight.DivideEdge(3, false)[1];
 
         //Draw point
-        GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        indicator.name = "Middle";
-        indicator.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-        indicator.transform.position = middlePoint.Position;
+        //GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        //indicator.name = "Middle";
+        //indicator.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+        //indicator.transform.position = middlePoint.Position;
 
         return middlePoint;
     }
@@ -206,9 +211,9 @@ public class Triangle : GeometricShape
     {
         List<Triangle> triangles = new List<Triangle>();
 
-        Vertex[] dividedAb = ab.DivideEdge(2);
-        Vertex[] dividedBc = bc.DivideEdge(2);
-        Vertex[] dividedCa = ca.DivideEdge(2);
+        Vertex[] dividedAb = ab.DivideEdge(2, false);
+        Vertex[] dividedBc = bc.DivideEdge(2, false);
+        Vertex[] dividedCa = ca.DivideEdge(2, false);
 
         CreateNewTriangle(dividedAb[0], dividedAb[1], dividedCa[1], "up", triangles);
         CreateNewTriangle(dividedAb[1], dividedBc[1], dividedCa[1], "down", triangles);
@@ -222,9 +227,9 @@ public class Triangle : GeometricShape
     {
         List<Triangle> triangles = new List<Triangle>();
         
-        Vertex[] dividedAb = ab.DivideEdge(3);
-        Vertex[] dividedBc = bc.DivideEdge(3);
-        Vertex[] dividedCa = ca.DivideEdge(3);
+        Vertex[] dividedAb = ab.DivideEdge(3, false);
+        Vertex[] dividedBc = bc.DivideEdge(3, false);
+        Vertex[] dividedCa = ca.DivideEdge(3, false);
 
         Vertex middle = GetMiddle();
         
