@@ -12,8 +12,7 @@ public class Vertex
 
     #region Public Properties
 
-    public Vector3 Position { get => position; set {{ position = value; } }
-}
+    public Vector3 Position { get { return position; } set { position = value; } }
     public List<Triangle> FiguresWithCommonVertex { get; set; }
 
     #endregion
@@ -24,6 +23,17 @@ public class Vertex
     {
         Position = position;
         FiguresWithCommonVertex = new List<Triangle>();
+    }
+
+    public override bool Equals(object toCompare)
+    {
+        Vertex vertex = (Vertex) toCompare;
+        if (vertex.Position == position)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     #endregion

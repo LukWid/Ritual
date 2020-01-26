@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Triangle : GeometricShape
@@ -15,7 +16,7 @@ public class Triangle : GeometricShape
 
     private int targetSubdivision;
     private int actualSubdivision;
-    private List<Triangle> dividedTriangles;
+    public List<Triangle> dividedTriangles;
 
     #endregion
 
@@ -33,18 +34,18 @@ public class Triangle : GeometricShape
         this.targetSubdivision = targetSubdivision;
         this.actualSubdivision = actualSubdivision;
 
-        a.FiguresWithCommonVertex.Add(this);
-        b.FiguresWithCommonVertex.Add(this);
-        c.FiguresWithCommonVertex.Add(this);
+        //a.FiguresWithCommonVertex.Add(this);
+        //b.FiguresWithCommonVertex.Add(this);
+        //c.FiguresWithCommonVertex.Add(this);
 
         ab = new Edge(a, b);
         bc = new Edge(b, c);
         ca = new Edge(c, a);
-
-        GenerateMesh(gameObject);
+        
+       GenerateMesh(gameObject);
     }
 
-    public void GetVertices(HashSet<Vertex> vertices)
+    public void GetVertices(List<Vertex> vertices)
     {
         if (actualSubdivision == targetSubdivision)
         {
@@ -60,7 +61,68 @@ public class Triangle : GeometricShape
             }
         }
     }
+    
+    public void GetCommonVertices(List<Vertex> vertices)
+    {
+        if (actualSubdivision == targetSubdivision)
+        {
+            VertexCollected(vertices, a);
+            VertexCollected(vertices, b);
+            VertexCollected(vertices, c);
+        }
+        else
+        {
+            foreach (var triangle in dividedTriangles)
+            {
+                triangle.GetCommonVertices(vertices);
+            }
+        }
+    }
+    
+    public void GetEdges(List<Edge> edges)
+    {
+        if (actualSubdivision == targetSubdivision)
+        {
+            EdgeCollected(edges, ab);
+            EdgeCollected(edges, bc);
+            EdgeCollected(edges, ca);
+        }
+        else
+        {
+            foreach (var triangle in dividedTriangles)
+            {
+                triangle.GetEdges(edges);
+            }
+        }
+    }
 
+    private void EdgeCollected(List<Edge> edges, Edge toFind)
+    {
+        bool isInList = edges.Contains(toFind);
+
+        if (isInList)
+        {
+            int index = edges.IndexOf(toFind);
+            edges[index].FiguresWithCommonEdge.Add(this);
+        }
+        else
+        {
+            toFind.FiguresWithCommonEdge.Add(this);
+            edges.Add(toFind);
+        }
+    }
+
+    private void VertexCollected(List<Vertex> vertices, Vertex toFind)
+    {
+        bool isInList = vertices.Contains(toFind);
+
+        if (isInList)
+        {
+            int index = vertices.IndexOf(toFind);
+            vertices[index].FiguresWithCommonVertex.Add(this);
+        }
+    }
+    
     public void GetTriangles(List<Triangle> triangles)
     {
         if (actualSubdivision == targetSubdivision)
@@ -85,7 +147,8 @@ public class Triangle : GeometricShape
         }
         else if(actualSubdivision < targetSubdivision)
         {
-            dividedTriangles = Subdivide();
+            //dividedTriangles = Subdivide();
+            dividedTriangles = SubdivideForHex();
         }
     }
 
@@ -124,12 +187,13 @@ public class Triangle : GeometricShape
     {
         Vertex middlePointOnBasis = new Vertex(Vector3.Lerp(b.Position, c.Position, 0.5f));
         Edge triangleHeight = new Edge(middlePointOnBasis, a);
-        Vertex middlePoint = triangleHeight.DivideEdge(3)[1];
+        Vertex middlePoint = triangleHeight.DivideEdge(3, false)[1];
 
         //Draw point
-        // GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        // indicator.transform.localScale = new Vector3(0.02f,0.02f,0.02f);
-        // indicator.transform.position = middlePoint.Position;
+        GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        indicator.name = "Middle";
+        indicator.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+        indicator.transform.position = middlePoint.Position;
 
         return middlePoint;
     }
@@ -146,31 +210,45 @@ public class Triangle : GeometricShape
         Vertex[] dividedBc = bc.DivideEdge(2);
         Vertex[] dividedCa = ca.DivideEdge(2);
 
-        GameObject upTriangle = new GameObject("up");
-        Triangle triangleUp = upTriangle.AddComponent<Triangle>();
-        triangleUp.Initialize(dividedAb[0], dividedAb[1], dividedCa[1],upTriangle,targetSubdivision, actualSubdivision + 1);
-        upTriangle.transform.parent = transform;
-        triangles.Add(triangleUp);
-
-        GameObject downTriangle = new GameObject("down");
-        Triangle triangleDown = downTriangle.AddComponent<Triangle>();
-        triangleDown.Initialize(dividedAb[1], dividedBc[1], dividedCa[1], downTriangle, targetSubdivision, actualSubdivision + 1);
-        downTriangle.transform.parent = transform;
-        triangles.Add(triangleDown);
-
-        GameObject leftTriangle = new GameObject("left");
-        Triangle triangleLeft = leftTriangle.AddComponent<Triangle>();
-        triangleLeft.Initialize(dividedBc[1], dividedBc[2], dividedCa[1], leftTriangle, targetSubdivision, actualSubdivision + 1);
-        leftTriangle.transform.parent = transform;
-        triangles.Add(triangleLeft);
-
-        GameObject rightTriangle = new GameObject("right");
-        Triangle triangleRight = rightTriangle.AddComponent<Triangle>();
-        triangleRight.Initialize(dividedAb[1], dividedBc[0], dividedBc[1], rightTriangle, targetSubdivision, actualSubdivision + 1);
-        rightTriangle.transform.parent = transform;
-        triangles.Add(triangleRight);
-
+        CreateNewTriangle(dividedAb[0], dividedAb[1], dividedCa[1], "up", triangles);
+        CreateNewTriangle(dividedAb[1], dividedBc[1], dividedCa[1], "down", triangles);
+        CreateNewTriangle(dividedBc[1], dividedBc[2], dividedCa[1],"left", triangles);
+        CreateNewTriangle(dividedAb[1], dividedBc[0], dividedBc[1], "right", triangles);
+        
         return triangles;
+    }
+
+    public List<Triangle> SubdivideForHex()
+    {
+        List<Triangle> triangles = new List<Triangle>();
+        
+        Vertex[] dividedAb = ab.DivideEdge(3);
+        Vertex[] dividedBc = bc.DivideEdge(3);
+        Vertex[] dividedCa = ca.DivideEdge(3);
+
+        Vertex middle = GetMiddle();
+        
+        CreateNewTriangle(dividedAb[0], dividedAb[1], dividedCa[2], "up", triangles);
+        CreateNewTriangle(dividedCa[1], dividedBc[2], dividedCa[0], "left", triangles);
+        CreateNewTriangle(dividedAb[2], dividedBc[0], dividedBc[1], "right", triangles);
+       
+        CreateNewTriangle(dividedAb[1], middle, dividedCa[2], "innerUp", triangles);
+        CreateNewTriangle(dividedCa[2], middle,dividedCa[1], "middleLeft", triangles);
+        CreateNewTriangle(dividedAb[1], dividedAb[2], middle, "middleRight", triangles);
+        CreateNewTriangle(middle, dividedBc[2], dividedCa[1], "innerLeft", triangles);
+        CreateNewTriangle(middle, dividedBc[1], dividedBc[2], "middleDown", triangles);
+        CreateNewTriangle(middle, dividedAb[2], dividedBc[1], "innerRight", triangles);
+        
+        return triangles;
+    }
+
+    private void CreateNewTriangle(Vertex a, Vertex b, Vertex c, string name, List<Triangle> triangles)
+    {
+        GameObject triangleGameObject = new GameObject($"{gameObject.name} {name}");
+        Triangle triangleScript = triangleGameObject.AddComponent<Triangle>();
+        triangleScript.Initialize(a, b, c, triangleGameObject, targetSubdivision, actualSubdivision + 1);
+        triangleGameObject.transform.parent = transform;
+        triangles.Add(triangleScript);
     }
 
     private Mesh GenerateTriangleFace()
@@ -187,6 +265,6 @@ public class Triangle : GeometricShape
 
         return face;
     }
-
+    
     #endregion
 }

@@ -10,7 +10,7 @@ public class MeshBuilder : MonoBehaviour
     [SerializeField]
     private GameObject hexTile;
     [SerializeField]
-    private int subdivisionLevel;
+    private int icoSphereSubdivision;
     
     #endregion
 
@@ -19,8 +19,10 @@ public class MeshBuilder : MonoBehaviour
     private int index;
     private List<Triangle> baseTriangles;
     private List<Triangle> allTriangles;
-    private HashSet<Vertex> vertices;
+    private List<Vertex> commonVertices;
+    private List<Vertex> allVertices;
     private float radius = 1;
+    List<Edge> edges = new List<Edge>();
 
     #endregion
 
@@ -28,10 +30,12 @@ public class MeshBuilder : MonoBehaviour
 
     private void Start()
     {
-        vertices = new HashSet<Vertex>();
+        commonVertices = new List<Vertex>();
+        allVertices = new List<Vertex>();
         baseTriangles = new List<Triangle>();
         allTriangles = new List<Triangle>();
-
+        edges = new List<Edge>();
+        
         float golden = (float) Constants.GoldenRatio;
 
         //Plane on X axis
@@ -46,7 +50,7 @@ public class MeshBuilder : MonoBehaviour
         Quad planeZ = CreateQuad(new Vector3(0, 0.5f, golden / 2), new Vector3(0, 0.5f, -golden / 2), new Vector3(0, -0.5f, -golden / 2), new Vector3(0, -0.5f, golden / 2));
 
         //planeZ.GenerateMesh();
-
+        
         baseTriangles.Add(CreateTriangle(planeY.A, planeZ.B, planeY.D));
         baseTriangles.Add(CreateTriangle(planeY.A, planeY.D, planeZ.A));
         baseTriangles.Add(CreateTriangle(planeY.A, planeX.A, planeX.B));
@@ -72,9 +76,24 @@ public class MeshBuilder : MonoBehaviour
         baseTriangles.Add(CreateTriangle(planeZ.D, planeY.B, planeX.A));
 
         GetTriangles();
-        GetVertices(vertices);
-        CastVerticesOnSphere();
+
+        
+        GetVertices(allVertices);
+        GetCommonVertices(commonVertices);
+        GetEdges(edges);
+        
+        //CastVerticesOnSphere();
+        //DivideEdges();
         RecalculateMesh();
+    }
+
+
+    private void DivideEdges()
+    {
+        foreach (var edge in edges)
+        {
+            edge.DivideEdge(3);
+        }
     }
 
     private void RecalculateMesh()
@@ -87,7 +106,7 @@ public class MeshBuilder : MonoBehaviour
 
     private void CastVerticesOnSphere()
     {
-        foreach (var vertex in vertices)
+        foreach (var vertex in allVertices)
         {
             vertex.Position = CastOnSphere(vertex);
         }
@@ -116,11 +135,34 @@ public class MeshBuilder : MonoBehaviour
 
     #region Private Methods
 
-    private void GetVertices(HashSet<Vertex> vertices)
+    private void GetVertices(List<Vertex> vertices)
     {
         foreach (var triangle in baseTriangles)
         {
             triangle.GetVertices(vertices);
+        }
+    }
+    
+    private void GetCommonVertices(List<Vertex> vertices)
+    {
+        foreach (var triangle in baseTriangles)
+        {
+            triangle.GetCommonVertices(vertices);
+        }
+        
+        foreach (var vertex in vertices)
+        {
+            Debug.Log($"==========");
+            Debug.Log(vertex.FiguresWithCommonVertex.Count);
+          //  vertex.FiguresWithCommonVertex.ForEach(f=> Debug.Log($"    {f.gameObject.name}"));
+        }
+    }
+    
+    private void GetEdges(List<Edge> edges)
+    {
+        foreach (var triangle in baseTriangles)
+        {
+            triangle.GetEdges(edges);
         }
     }
 
@@ -129,11 +171,11 @@ public class MeshBuilder : MonoBehaviour
         GameObject triangle = new GameObject($"Triangle {index}");
         triangle.transform.parent = transform;
         Triangle triangleScript = triangle.AddComponent<Triangle>();
-        triangleScript.Initialize(a, b, c, triangle, subdivisionLevel);
+        triangleScript.Initialize(a, b, c, triangle, icoSphereSubdivision);
         index++;
         return triangleScript;
     }
-
+    
     private Quad CreateQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
     {
         Vertex vertexA = new Vertex(a);
@@ -144,15 +186,8 @@ public class MeshBuilder : MonoBehaviour
         return new Quad(vertexA, vertexB, vertexC, vertexD);
     }
 
-    private void GetNeighbours()
-    {
-        foreach (var vertex in vertices)
-        {
-            Debug.Log("============");
-            vertex.FiguresWithCommonVertex.ForEach(i => Debug.Log(i.name));
-        }
-    }
-
+    
+   
     private void CreateIndicator(Vector3 position)
     {
         GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cube);
