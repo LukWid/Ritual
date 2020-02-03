@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class MeshBuilder : MonoBehaviour
 {
+    
+    
+    
+    
     #region Serialized Fields
 
     [SerializeField]
@@ -23,6 +27,10 @@ public class MeshBuilder : MonoBehaviour
     private List<Vertex> allVertices;
     private float radius = 1;
     List<Edge> edges = new List<Edge>();
+
+    //New way
+    
+    private List<Vector3> n_vertices = new List<Vector3>();
 
     #endregion
 
@@ -51,7 +59,23 @@ public class MeshBuilder : MonoBehaviour
 
         //planeZ.GenerateMesh();
         
-        baseTriangles.Add(CreateTriangle(planeY.A, planeZ.B, planeY.D));
+        
+        n_vertices.Add(new Vector3(golden / 2, 0, 0.5f));
+        n_vertices.Add(new Vector3(golden / 2, 0, -0.5f));
+        n_vertices.Add(new Vector3(-golden / 2, 0, -0.5f));
+        n_vertices.Add(new Vector3(-golden / 2, 0, 0.5f));
+        
+        n_vertices.Add(new Vector3(0.5f, golden / 2, 0));
+        n_vertices.Add(new Vector3(0.5f, -golden / 2, 0));
+        n_vertices.Add(new Vector3(-0.5f, -golden / 2, 0));
+        n_vertices.Add(new Vector3(-0.5f, golden / 2, 0));
+        
+        n_vertices.Add(new Vector3(0, 0.5f, golden / 2));
+        n_vertices.Add(new Vector3(0, 0.5f, -golden / 2));
+        n_vertices.Add(new Vector3(0, -0.5f, -golden / 2));
+        n_vertices.Add(new Vector3(0, -0.5f, golden / 2));
+        
+        /*baseTriangles.Add(CreateTriangle(planeY.A, planeZ.B, planeY.D));
         baseTriangles.Add(CreateTriangle(planeY.A, planeY.D, planeZ.A));
         baseTriangles.Add(CreateTriangle(planeY.A, planeX.A, planeX.B));
         baseTriangles.Add(CreateTriangle(planeY.A, planeZ.A, planeX.A));
@@ -74,29 +98,39 @@ public class MeshBuilder : MonoBehaviour
         baseTriangles.Add(CreateTriangle(planeY.D, planeX.D, planeZ.A));
         baseTriangles.Add(CreateTriangle(planeX.D, planeY.C, planeZ.D));
         baseTriangles.Add(CreateTriangle(planeZ.D, planeY.B, planeX.A));
-
+        */
+        
         GetTriangles();
-
+        Debug.Log(allTriangles.Count);
+        
         
         GetVertices(allVertices);
         GetCommonVertices(commonVertices);
-
-        foreach (var vertex in commonVertices)
-        {
-            if (vertex.FiguresWithCommonVertex.Count == 5)
-            {
-                vertex.Truncate();
-            }
-        }
-        
         GetEdges(edges);
+//
+        //foreach (var edge in edges)
+        //{
+        //    Debug.Log($"==========");
+        //    edge.FiguresWithCommonEdge.ForEach(x => Debug.Log(x.name));
+        //}
+
         
-        //CastVerticesOnSphere();
-        //DivideEdges();
+        CastVerticesOnSphere();
+        
+        foreach (var triangle in allTriangles)
+        {
+            triangle.dividedTriangles = triangle.SubdivideForHex();
+        }
+        //foreach (var vertex in commonVertices)
+        //{
+        //    if (vertex.FiguresWithCommonVertex.Count == 5)
+        //    {
+        //        vertex.Truncate();
+        //    }
+        //}
         RecalculateMesh();
         
     }
-
 
     private void DivideEdges()
     {
@@ -121,15 +155,6 @@ public class MeshBuilder : MonoBehaviour
             vertex.Position = CastOnSphere(vertex);
         }
     }
-
-    private void GetTriangles()
-    {
-        foreach (var triangle in baseTriangles)
-        {
-            triangle.GetTriangles(allTriangles);
-        }
-    }
-    
     
     private Vector3 CastOnSphere(Vertex vertex)
     {
@@ -140,6 +165,16 @@ public class MeshBuilder : MonoBehaviour
        
         return vertex.Position;
     }
+
+    private void GetTriangles()
+    {
+        foreach (var triangle in baseTriangles)
+        {
+            triangle.GetTriangles(allTriangles);
+        }
+    }
+    
+    
 
     #endregion
 

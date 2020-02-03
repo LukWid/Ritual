@@ -7,13 +7,14 @@ public class Vertex
 
     [SerializeField]
     private Vector3 position;
+    public int vertexIndex;
 
     #endregion
 
     #region Public Properties
 
     public Vector3 Position { get { return position; } set { position = value; } }
-    public List<Triangle> FiguresWithCommonVertex { get; set; }
+    public HashSet<Triangle> FiguresWithCommonVertex { get; set; }
 
     #endregion
 
@@ -22,7 +23,13 @@ public class Vertex
     public Vertex(Vector3 position)
     {
         Position = position;
-        FiguresWithCommonVertex = new List<Triangle>();
+        FiguresWithCommonVertex = new HashSet<Triangle>();
+    }
+    public Vertex(Vector3 position, PlanetGenerator planetGenerator)
+    {
+        Position = position;
+        vertexIndex = planetGenerator.vertices.Count;
+        FiguresWithCommonVertex = new HashSet<Triangle>();
     }
 
     public override bool Equals(object toCompare)
@@ -47,9 +54,9 @@ public class Vertex
 
         foreach (var figure in FiguresWithCommonVertex)
         {
-            List<Vertex> vertices = new List<Vertex>();
-            figure.GetVertices(vertices);
-            foreach (var vertex in vertices)
+            //List<Vertex> vertices = new List<Vertex>();
+            //figure.GetVertices(vertices);
+            foreach (var vertex in figure.Vertices)
             {
                 if (!vertex.Equals(this))
                 {
@@ -60,7 +67,6 @@ public class Vertex
                 }
             }
         }
-
         position.x = x / count;
         position.y = y / count;
         position.z = z / count;
