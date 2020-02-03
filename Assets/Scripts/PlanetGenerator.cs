@@ -21,12 +21,15 @@ public class PlanetGenerator : MonoBehaviour
     public List<Triangle> triangles = new List<Triangle>();
     public Dictionary<Vector3, List<Triangle>> vertexTriangles;
     public List<Vertex> vertices = new List<Vertex>();
-
+    public HashSet<Vector3> toTruncate;
+    
     #region Unity Callbacks
 
     private void Start()
     {
         vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
+        toTruncate = new HashSet<Vector3>(customComparer);
+
         // float golden = (float) Constants.GoldenRatio;
         float golden = ( 1f + Mathf.Sqrt(5f) ) / 2f;
 
@@ -74,7 +77,7 @@ public class PlanetGenerator : MonoBehaviour
         triangles.Add(new Triangle(8, 6, 7, triangles, this));
         triangles.Add(new Triangle(9, 8, 1, triangles, this));
 
-        for (int i = 0; i < recursionLevel - 1; i++)
+        for (int i = 0; i < recursionLevel-1; i++)
         {
             List<Triangle> triangles2 = new List<Triangle>();
             vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
@@ -107,39 +110,43 @@ public class PlanetGenerator : MonoBehaviour
 
         List<Triangle> newTriangles = new List<Triangle>();
         vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
-
+    
         foreach (var triangle in triangles)
         {
             Vertex a = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 1 / 3f).normalized, this);
             vertices.Add(a);
-
+    
             Vertex c = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 2 / 3f).normalized, this);
             vertices.Add(c);
-
+    
             Vertex e = new Vertex(Vector3.Lerp(vertices[triangle.v3].Position, vertices[triangle.v1].Position, 1 / 3f).normalized, this);
             vertices.Add(e);
-
+    
             Vertex b = new Vertex(Vector3.Lerp(vertices[triangle.v3].Position, vertices[triangle.v1].Position, 2 / 3f).normalized, this);
             vertices.Add(b);
-
+    
             Vertex f = new Vertex(Vector3.Lerp(vertices[triangle.v2].Position, vertices[triangle.v3].Position, 1 / 3f).normalized, this);
             vertices.Add(f);
-
+    
             Vertex g = new Vertex(Vector3.Lerp(vertices[triangle.v2].Position, vertices[triangle.v3].Position, 2 / 3f).normalized, this);
             vertices.Add(g);
-
-            Vertex d =
-                new
-                    Vertex(new Vector3(( vertices[triangle.v1].Position.x + vertices[triangle.v2].Position.x + vertices[triangle.v3].Position.x ) / 3, ( vertices[triangle.v1].Position.y + vertices[triangle.v2].Position.y + vertices[triangle.v3].Position.y ) / 3, ( vertices[triangle.v1].Position.z + vertices[triangle.v2].Position.z + vertices[triangle.v3].Position.z ) / 3).normalized,
-                           this);
-
-            //Vertex d = new Vertex( new Vector3((b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x)/6, 
-            //                         (b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y)/6,
-            //                         (b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z)/6
-            //                         ), this);
-
+    
+            //Vertex d =
+            //    new
+            //        Vertex(new Vector3(( vertices[triangle.v1].Position.x + vertices[triangle.v2].Position.x + vertices[triangle.v3].Position.x ) / 3, ( vertices[triangle.v1].Position.y + vertices[triangle.v2].Position.y + vertices[triangle.v3].Position.y ) / 3, ( vertices[triangle.v1].Position.z + vertices[triangle.v2].Position.z + vertices[triangle.v3].Position.z ) / 3).normalized,
+            //               this);
+    
+            Vertex d = new Vertex( new Vector3((b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x)/6, 
+                                     (b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y)/6,
+                                     (b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z)/6
+                                     ) * 1f, this);
+    
             vertices.Add(d);
-
+            
+            toTruncate.Add(vertices[triangle.v1].Position);
+            toTruncate.Add(vertices[triangle.v2].Position);
+            toTruncate.Add(vertices[triangle.v3].Position);
+    
             newTriangles.Add(new Triangle(triangle.v1, a.vertexIndex, b.vertexIndex, newTriangles, this));
             newTriangles.Add(new Triangle(a.vertexIndex, c.vertexIndex, d.vertexIndex, newTriangles, this));
             newTriangles.Add(new Triangle(a.vertexIndex, d.vertexIndex, b.vertexIndex, newTriangles, this));
@@ -150,37 +157,76 @@ public class PlanetGenerator : MonoBehaviour
             newTriangles.Add(new Triangle(f.vertexIndex, c.vertexIndex, triangle.v2, newTriangles, this));
             newTriangles.Add(new Triangle(e.vertexIndex, g.vertexIndex, triangle.v3, newTriangles, this));
         }
-
+    
         triangles = newTriangles;
 
-        foreach (KeyValuePair<Vector3, List<Triangle>> entry in vertexTriangles)
+        TruncatePentagons();
+
+        foreach (var position in toTruncate)
         {
-            Debug.Log($"{entry.Value.Count}");
-            // if (entry.Value.Count == 3)
+            Vector3 truncated = TruncateVertex(position, vertexTriangles[position]);
+            foreach (var vertex in vertices)
             {
-                //    Debug.Log($"{entry.Key.x}:{entry.Key.y}:{entry.Key.z}");
+                if (vertex.Position == position)
+                {
+                    vertex.Position = truncated;
+                }
             }
         }
-
+        
         BuildMesh();
+    }
+
+    private void TruncatePentagons()
+    {
+        foreach (KeyValuePair<Vector3, List<Triangle>> entry in vertexTriangles)
+        {
+            if (entry.Value.Count == 5)
+            {
+                Vector3 truncated = TruncateVertex(entry.Key, entry.Value);
+                foreach (var vertex in vertices)
+                {
+                    if (vertex.Position == entry.Key)
+                    {
+                        vertex.Position = truncated;
+                    }
+                }
+            }
+        }
+    }
+
+    private Vector3 TruncateVertex(Vector3 entryKey, List<Triangle> triangles)
+    {
+        float x = 0;
+        float y = 0;
+        float z = 0;
+        int count = 0;
+        foreach (var triangle in triangles)
+        {
+            foreach (int vertex in triangle.GetVertices())
+            {
+                Vector3 position = vertices[vertex].Position;
+                if (position != entryKey)
+                {
+                    count++;
+                    x += position.x;
+                    y += position.y;
+                    z += position.z;
+                }
+            }
+        }
+        
+        Vector3 truncatedVertex = new Vector3();
+
+        truncatedVertex.x = x / count;
+        truncatedVertex.y = y / count;
+        truncatedVertex.z = z / count;
+        return truncatedVertex;
     }
 
     #endregion
 
     #region Private Methods
-
-    //private void AddToDictionary(int index, Dictionary<Vector3, List<Triangle>> vertexTriangles, List<Vertex> vertices)
-    //{
-    //    if (vertexTriangles.ContainsKey(vertices[index].Position))
-    //    {
-    //        vertexTriangles[vertices[index].Position].Add(this);
-    //    }
-    //    else
-    //    {
-    //        vertexTriangles[vertices[index].Position] = new List<Triangle>();
-    //        vertexTriangles[vertices[index].Position].Add(this);
-    //    }
-    //}
 
     private void SpawnHex(Triangle triangle)
     {
@@ -218,6 +264,25 @@ public class PlanetGenerator : MonoBehaviour
 
         face.triangles = trianglesInts.ToArray();
 
+       // var nVertices = face.vertices;
+       // Vector2[] UVs = new Vector2[nVertices.Length];
+ //
+       // for(var i= 0; i < nVertices.Length; i++){
+       //     var unitVector = nVertices[i].normalized;
+       //     Vector2 ICOuv = new Vector2(0, 0);
+       //     ICOuv.x = (Mathf.Atan2(unitVector.x, unitVector.z) + Mathf.PI) / Mathf.PI / 2;
+       //     ICOuv.y = (Mathf.Acos(unitVector.y) + Mathf.PI) / Mathf.PI - 1;
+       //     UVs[i] = new Vector2(ICOuv.x, ICOuv.y);
+       // }
+ //
+       // face.uv = UVs;
+ 
+        Vector3[] normales = new Vector3[ allVertices.Count];
+        for( int i = 0; i < normales.Length; i++ )
+            normales[i] = allVertices[i].normalized;
+ 
+        face.normals = normales;
+      
         face.RecalculateNormals();
         face.Optimize();
 
