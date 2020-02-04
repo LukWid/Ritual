@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlanetGenerator : MonoBehaviour
@@ -22,7 +23,8 @@ public class PlanetGenerator : MonoBehaviour
     public Dictionary<Vector3, List<Triangle>> vertexTriangles;
     public List<Vertex> vertices = new List<Vertex>();
     public HashSet<Vector3> toTruncate;
-    
+    private List<Hexagon> hexes;
+    private List<Pentagon> pentagons;
     #region Unity Callbacks
 
     private void Start()
@@ -111,6 +113,9 @@ public class PlanetGenerator : MonoBehaviour
         List<Triangle> newTriangles = new List<Triangle>();
         vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
     
+        hexes = new List<Hexagon>();
+        pentagons = new List<Pentagon>();
+        
         foreach (var triangle in triangles)
         {
             Vertex a = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 1 / 3f).normalized, this);
@@ -141,6 +146,8 @@ public class PlanetGenerator : MonoBehaviour
                                      (b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z)/6
                                      ) * 1f, this);
     
+            d.Position = new Vector3((float)Math.Round(d.Position.x, 1), (float)Math.Round(d.Position.y, 1), (float)Math.Round(d.Position.z, 1));
+            d.Position = Vector3.zero;
             vertices.Add(d);
             
             toTruncate.Add(vertices[triangle.v1].Position);
@@ -148,14 +155,24 @@ public class PlanetGenerator : MonoBehaviour
             toTruncate.Add(vertices[triangle.v3].Position);
     
             newTriangles.Add(new Triangle(triangle.v1, a.vertexIndex, b.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(a.vertexIndex, c.vertexIndex, d.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(a.vertexIndex, d.vertexIndex, b.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(b.vertexIndex, d.vertexIndex, e.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(d.vertexIndex, g.vertexIndex, e.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(d.vertexIndex, f.vertexIndex, g.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(d.vertexIndex, c.vertexIndex, f.vertexIndex, newTriangles, this));
             newTriangles.Add(new Triangle(f.vertexIndex, c.vertexIndex, triangle.v2, newTriangles, this));
             newTriangles.Add(new Triangle(e.vertexIndex, g.vertexIndex, triangle.v3, newTriangles, this));
+
+            Triangle tri1 = new Triangle(a.vertexIndex, c.vertexIndex, d.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri1);
+            Triangle tri2 = new Triangle(a.vertexIndex, d.vertexIndex, b.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri2);
+            Triangle tri3 = new Triangle(b.vertexIndex, d.vertexIndex, e.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri3);
+            Triangle tri4 = new Triangle(d.vertexIndex, g.vertexIndex, e.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri4);
+            Triangle tri5 = new Triangle(d.vertexIndex, f.vertexIndex, g.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri5);
+            Triangle tri6 = new Triangle(d.vertexIndex, c.vertexIndex, f.vertexIndex, newTriangles, this);
+            newTriangles.Add(tri6);
+
+            Hexagon hex = new Hexagon(d, tri1,tri2,tri3,tri4,tri5,tri6,this);
+            hexes.Add(hex);
         }
     
         triangles = newTriangles;
@@ -164,17 +181,36 @@ public class PlanetGenerator : MonoBehaviour
 
         foreach (var position in toTruncate)
         {
-            Vector3 truncated = TruncateVertex(position, vertexTriangles[position]);
-            foreach (var vertex in vertices)
+            List<Triangle> triangles = vertexTriangles[position];
+            if (triangles.Count == 6)
             {
-                if (vertex.Position == position)
-                {
-                    vertex.Position = truncated;
-                }
+               // Hexagon hex = new Hexagon(FindVertex(position), triangles[0],triangles[1],triangles[2],triangles[3],triangles[4],triangles[5],this);
+                Vertex middle = FindVertex(position);
+                Hexagon hex = new Hexagon(middle, vertexTriangles[middle.Position], this);
+                hexes.Add(hex);
             }
+
+
+            //Vector3 truncated = TruncateVertex(position, vertexTriangles[position]);
+            //foreach (var vertex in vertices)
+            //{
+            //    if (vertex.Position == position)
+            //    {
+            //        vertex.Position = truncated;
+            //    }
+            //}
         }
-        
-        BuildMesh();
+
+        foreach (var hex in hexes)
+        {
+            hex.TruncateVertex();
+        }
+
+        foreach (var pent in pentagons)
+        {
+            pent.TruncateVertex();
+        }
+        //BuildMesh();
     }
 
     private void TruncatePentagons()
@@ -183,6 +219,8 @@ public class PlanetGenerator : MonoBehaviour
         {
             if (entry.Value.Count == 5)
             {
+                Pentagon pent = new Pentagon(FindVertex(entry.Key), entry.Value[0], entry.Value[1], entry.Value[2], entry.Value[3], entry.Value[4], this);
+                pentagons.Add(pent);
                 Vector3 truncated = TruncateVertex(entry.Key, entry.Value);
                 foreach (var vertex in vertices)
                 {
@@ -277,11 +315,11 @@ public class PlanetGenerator : MonoBehaviour
  //
        // face.uv = UVs;
  
-        Vector3[] normales = new Vector3[ allVertices.Count];
-        for( int i = 0; i < normales.Length; i++ )
-            normales[i] = allVertices[i].normalized;
- 
-        face.normals = normales;
+        //Vector3[] normales = new Vector3[ allVertices.Count];
+        //for( int i = 0; i < normales.Length; i++ )
+        //    normales[i] = allVertices[i].normalized;
+ //
+        //face.normals = normales;
       
         face.RecalculateNormals();
         face.Optimize();
@@ -289,6 +327,18 @@ public class PlanetGenerator : MonoBehaviour
         GetComponent<MeshFilter>().mesh = face;
         MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
         meshRenderer.material = material;
+    }
+
+    private Vertex FindVertex(Vector3 position)
+    {
+        foreach (var vertex in vertices)
+        {
+            if (vertex.Position == position)
+            {
+                return vertex;
+            }
+        }
+        return null;
     }
 
     #endregion
@@ -309,5 +359,18 @@ public class PlanetGenerator : MonoBehaviour
         }
 
         #endregion
+    }
+
+    public int GetVertexIndex(Vector3 position)
+    {
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            if (vertices[i].Position.Equals(position))
+            {
+                return vertices[i].vertexIndex;
+            }
+        }
+        
+        return -1;
     }
 }

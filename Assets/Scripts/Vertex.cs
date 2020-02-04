@@ -28,7 +28,12 @@ public class Vertex
     public Vertex(Vector3 position, PlanetGenerator planetGenerator)
     {
         Position = position;
-        vertexIndex = planetGenerator.vertices.Count;
+        vertexIndex = planetGenerator.GetVertexIndex(position);
+        if (vertexIndex == -1)
+        {
+            vertexIndex = planetGenerator.vertices.Count;
+        }
+
         FiguresWithCommonVertex = new HashSet<Triangle>();
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -50,6 +51,10 @@ public class Triangle : GeometricShape
 
     private void AddToDictionary(int index, Dictionary<Vector3, List<Triangle>> vertexTriangles, List<Vertex> vertices)
     {
+        //Vector3 key = new Vector3((float)Math.Round(vertices[index].Position.x,2),
+        //                          (float)Math.Round(vertices[index].Position.y,2),
+        //                          (float)Math.Round(vertices[index].Position.z,2));
+        
         if (vertexTriangles.ContainsKey(vertices[index].Position))
         {
             vertexTriangles[vertices[index].Position].Add(this);
@@ -59,6 +64,16 @@ public class Triangle : GeometricShape
             vertexTriangles[vertices[index].Position] = new List<Triangle>();
             vertexTriangles[vertices[index].Position].Add(this);
         }
+        
+        //if (vertexTriangles.ContainsKey(key))
+        //{
+        //    vertexTriangles[key].Add(this);
+        //}
+        //else
+        //{
+        //    vertexTriangles[key] = new List<Triangle>();
+        //    vertexTriangles[key].Add(this);
+        //}
     }
     
     public int[] GetVertices()
@@ -292,9 +307,6 @@ public class Triangle : GeometricShape
         CreateNewTriangle(middle, dividedBc[2], dividedCa[1], "innerLeft", triangles);
         CreateNewTriangle(middle, dividedBc[1], dividedBc[2], "middleDown", triangles);
         CreateNewTriangle(middle, dividedAb[2], dividedBc[1], "innerRight", triangles);
-        
-        Hexagon hex = new Hexagon(middle, triangles[3],triangles[4],triangles[5],triangles[6],triangles[7],triangles[8]);
-        hex.TruncateHex();
         
         return triangles;
     }
