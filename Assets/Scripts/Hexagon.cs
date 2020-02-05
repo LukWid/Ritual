@@ -15,8 +15,7 @@ public class Hexagon : MonoBehaviour
 
     public Hexagon(Vertex middle, Triangle a, Triangle b, Triangle c, Triangle d, Triangle e, Triangle f, PlanetGenerator planetGenerator)
     {
-        triangles = new List<Triangle>(middle.FiguresWithCommonVertex);
-       // Debug.Log($"==========");
+        triangles = new List<Triangle>();
         triangles.Add(a);
         triangles.Add(b);
         triangles.Add(c);
@@ -48,7 +47,7 @@ public class Hexagon : MonoBehaviour
         {
             foreach (int vertex in triangle.GetVertices())
             {
-                Vector3 position = generator.vertices[vertex].Position;
+                Vector3 position = generator.Vertices[vertex].Position;
                 if (position != middle.Position)
                 {
                     count++;
@@ -58,12 +57,13 @@ public class Hexagon : MonoBehaviour
                 }
             }
         }
+
         Vector3 truncatedVertex = new Vector3();
 
         truncatedVertex.x = x / count;
         truncatedVertex.y = y / count;
         truncatedVertex.z = z / count;
-        
+
         middle.Position = truncatedVertex;
         GenerateMesh();
     }
@@ -72,14 +72,12 @@ public class Hexagon : MonoBehaviour
     {
         GameObject gameObject = new GameObject("Hexagon");
         gameObject.transform.parent = generator.transform;
-        //gameObject.transform.position = middle.Position;
-        //gameObject.transform.LookAt(Vector3.zero);
         
         Mesh mesh = new Mesh();
-        
+
         List<Vector3> allVertices = new List<Vector3>();
 
-        foreach (var vertex in generator.vertices)
+        foreach (var vertex in generator.Vertices)
         {
             allVertices.Add(vertex.Position);
         }
@@ -93,14 +91,14 @@ public class Hexagon : MonoBehaviour
         }
 
         mesh.triangles = trianglesInts.ToArray();
-        
+
         mesh.RecalculateNormals();
-//        mesh.Optimize();
+        mesh.Optimize();
 
         gameObject.AddComponent<MeshFilter>().mesh = mesh;
         MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        meshRenderer.material = generator.material;
+        meshRenderer.material = generator.DefaultMaterial;
     }
-    
+
     #endregion
 }

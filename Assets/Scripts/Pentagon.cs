@@ -1,12 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Pentagon : MonoBehaviour
 {
+    #region Private Fields
+
     private List<Triangle> triangles;
     private Vertex middle;
     private PlanetGenerator generator;
+
+    #endregion
+
+    #region Constructors
 
     public Pentagon(Vertex middle, Triangle a, Triangle b, Triangle c, Triangle d, Triangle e, PlanetGenerator planetGenerator)
     {
@@ -18,26 +23,22 @@ public class Pentagon : MonoBehaviour
         triangles.Add(e);
         generator = planetGenerator;
         this.middle = middle;
-        //middle.Truncate();
     }
 
-    public void Truncate()
-    {
-        middle.Truncate();
-    }
+    #endregion
+
+    #region Public Methods
 
     public void GenerateMesh()
     {
         GameObject gameObject = new GameObject("Pentagon");
         gameObject.transform.parent = generator.transform;
-        //gameObject.transform.position = middle.Position;
-        //gameObject.transform.LookAt(Vector3.zero);
-        
+
         Mesh mesh = new Mesh();
-        
+
         List<Vector3> allVertices = new List<Vector3>();
 
-        foreach (var vertex in generator.vertices)
+        foreach (var vertex in generator.Vertices)
         {
             allVertices.Add(vertex.Position);
         }
@@ -51,16 +52,15 @@ public class Pentagon : MonoBehaviour
         }
 
         mesh.triangles = trianglesInts.ToArray();
-        
+
         mesh.RecalculateNormals();
-//        mesh.Optimize();
+        mesh.Optimize();
 
         gameObject.AddComponent<MeshFilter>().mesh = mesh;
         MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        meshRenderer.material = generator.material;
+        meshRenderer.material = generator.DefaultMaterial;
     }
-    
-    
+
     public void TruncateVertex()
     {
         float x = 0;
@@ -71,8 +71,8 @@ public class Pentagon : MonoBehaviour
         {
             foreach (int vertex in triangle.GetVertices())
             {
-                Vector3 position = generator.vertices[vertex].Position;
-                if (!position.Equals( middle.Position))
+                Vector3 position = generator.Vertices[vertex].Position;
+                if (!position.Equals(middle.Position))
                 {
                     count++;
                     x += position.x;
@@ -81,7 +81,7 @@ public class Pentagon : MonoBehaviour
                 }
             }
         }
-        
+
         Vector3 truncatedVertex = new Vector3();
 
         truncatedVertex.x = x / count;
@@ -91,5 +91,6 @@ public class Pentagon : MonoBehaviour
         middle.Position = truncatedVertex;
         GenerateMesh();
     }
-}
 
+    #endregion
+}

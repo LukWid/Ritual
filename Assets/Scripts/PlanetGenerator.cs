@@ -1,57 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class PlanetGenerator : MonoBehaviour
 {
+    #region Serialized Fields
+
+    [SerializeField]
+    private int recursionLevel;
+    [SerializeField]
+    private List<Material> defaultMaterial;
+    [SerializeField]
+    private GameObject hexTile;
+    
+    #endregion
+
     #region Private Fields
 
     private float radius = 1.0f;
-
-    #endregion
-
-    #region  Constants
-
-    public static Vector3CoordComparer customComparer = new Vector3CoordComparer();
-
-    #endregion
-
-    public GameObject hexTile;
-    public Material material;
-    public int recursionLevel;
-    public List<Triangle> triangles = new List<Triangle>();
-    public Dictionary<Vector3, List<Triangle>> vertexTriangles;
-    public List<Vertex> vertices = new List<Vertex>();
-    public HashSet<Vector3> toTruncate;
     private List<Hexagon> hexes;
     private List<Pentagon> pentagons;
+    private HashSet<Vector3> toTruncate;
+    private List<Triangle> triangles = new List<Triangle>();
+    private Dictionary<Vector3, List<Triangle>> vertexTriangles;
+    private List<Vertex> vertices = new List<Vertex>();
+    private static Vector3CoordComparer customComparer = new Vector3CoordComparer();
+
+    #endregion
+
+    #region Public Properties
+
+    public List<Vertex> Vertices { get => vertices; set => vertices = value; }
+    public Dictionary<Vector3, List<Triangle>> VertexTriangles { get => vertexTriangles; private set => vertexTriangles = value; }
+    public GameObject HexTile { get => hexTile; set => hexTile = value; }
+    public Material DefaultMaterial {
+        get
+        {
+            Random rnd = new Random();
+            return defaultMaterial[rnd.Next(defaultMaterial.Count)];
+        }
+    }
+
+    #endregion
+
     #region Unity Callbacks
 
     private void Start()
     {
-        vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
+        VertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
         toTruncate = new HashSet<Vector3>(customComparer);
 
-        // float golden = (float) Constants.GoldenRatio;
         float golden = ( 1f + Mathf.Sqrt(5f) ) / 2f;
 
         //12 Vertices of ico sphere
-        //-1f,  t,  0f)
 
-        vertices.Add(new Vertex(new Vector3(-1f, golden, 0f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(1f, golden, 0f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(-1f, -golden, 0f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(1f, -golden, 0f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(-1f, golden, 0f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(1f, golden, 0f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(-1f, -golden, 0f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(1f, -golden, 0f).normalized, this));
 
-        vertices.Add(new Vertex(new Vector3(0f, -1f, golden).normalized, this));
-        vertices.Add(new Vertex(new Vector3(0f, 1f, golden).normalized, this));
-        vertices.Add(new Vertex(new Vector3(0f, -1f, -golden).normalized, this));
-        vertices.Add(new Vertex(new Vector3(0f, 1f, -golden).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(0f, -1f, golden).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(0f, 1f, golden).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(0f, -1f, -golden).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(0f, 1f, -golden).normalized, this));
 
-        vertices.Add(new Vertex(new Vector3(golden, 0f, -1f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(golden, 0f, 1f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(-golden, 0f, -1f).normalized, this));
-        vertices.Add(new Vertex(new Vector3(-golden, 0f, 1f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(golden, 0f, -1f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(golden, 0f, 1f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(-golden, 0f, -1f).normalized, this));
+        Vertices.Add(new Vertex(new Vector3(-golden, 0f, 1f).normalized, this));
 
         //20 triangles
 
@@ -79,27 +96,26 @@ public class PlanetGenerator : MonoBehaviour
         triangles.Add(new Triangle(8, 6, 7, triangles, this));
         triangles.Add(new Triangle(9, 8, 1, triangles, this));
 
-        for (int i = 0; i < recursionLevel-1; i++)
+        for (int i = 0; i < recursionLevel - 1; i++)
         {
             List<Triangle> triangles2 = new List<Triangle>();
-            vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
+            VertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
             foreach (var triangle in triangles)
             {
-                //Vertex a = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 0.5f).normalized, this);
-                Vector3 v = new Vector3(( vertices[triangle.v1].Position.x + vertices[triangle.v2].Position.x ) / 2, ( vertices[triangle.v1].Position.y + vertices[triangle.v2].Position.y ) / 2,
-                                        ( vertices[triangle.v1].Position.z + vertices[triangle.v2].Position.z ) / 2);
+                Vector3 v = new Vector3(( Vertices[triangle.v1].Position.x + Vertices[triangle.v2].Position.x ) / 2, ( Vertices[triangle.v1].Position.y + Vertices[triangle.v2].Position.y ) / 2,
+                                        ( Vertices[triangle.v1].Position.z + Vertices[triangle.v2].Position.z ) / 2);
                 Vertex a = new Vertex(v.normalized, this);
-                vertices.Add(a);
+                Vertices.Add(a);
 
-                Vector3 p = new Vector3(( vertices[triangle.v2].Position.x + vertices[triangle.v3].Position.x ) / 2, ( vertices[triangle.v2].Position.y + vertices[triangle.v3].Position.y ) / 2,
-                                        ( vertices[triangle.v2].Position.z + vertices[triangle.v3].Position.z ) / 2);
+                Vector3 p = new Vector3(( Vertices[triangle.v2].Position.x + Vertices[triangle.v3].Position.x ) / 2, ( Vertices[triangle.v2].Position.y + Vertices[triangle.v3].Position.y ) / 2,
+                                        ( Vertices[triangle.v2].Position.z + Vertices[triangle.v3].Position.z ) / 2);
                 Vertex b = new Vertex(p.normalized, this);
-                vertices.Add(b);
+                Vertices.Add(b);
 
-                Vector3 o = new Vector3(( vertices[triangle.v3].Position.x + vertices[triangle.v1].Position.x ) / 2, ( vertices[triangle.v3].Position.y + vertices[triangle.v1].Position.y ) / 2,
-                                        ( vertices[triangle.v3].Position.z + vertices[triangle.v1].Position.z ) / 2);
+                Vector3 o = new Vector3(( Vertices[triangle.v3].Position.x + Vertices[triangle.v1].Position.x ) / 2, ( Vertices[triangle.v3].Position.y + Vertices[triangle.v1].Position.y ) / 2,
+                                        ( Vertices[triangle.v3].Position.z + Vertices[triangle.v1].Position.z ) / 2);
                 Vertex c = new Vertex(o.normalized, this);
-                vertices.Add(c);
+                Vertices.Add(c);
 
                 triangles2.Add(new Triangle(triangle.v1, a.vertexIndex, c.vertexIndex, triangles2, this));
                 triangles2.Add(new Triangle(a.vertexIndex, triangle.v2, b.vertexIndex, triangles2, this));
@@ -111,49 +127,44 @@ public class PlanetGenerator : MonoBehaviour
         }
 
         List<Triangle> newTriangles = new List<Triangle>();
-        vertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
-    
+        VertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
+
         hexes = new List<Hexagon>();
         pentagons = new List<Pentagon>();
-        
+
         foreach (var triangle in triangles)
         {
-            Vertex a = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 1 / 3f).normalized, this);
-            vertices.Add(a);
-    
-            Vertex c = new Vertex(Vector3.Lerp(vertices[triangle.v1].Position, vertices[triangle.v2].Position, 2 / 3f).normalized, this);
-            vertices.Add(c);
-    
-            Vertex e = new Vertex(Vector3.Lerp(vertices[triangle.v3].Position, vertices[triangle.v1].Position, 1 / 3f).normalized, this);
-            vertices.Add(e);
-    
-            Vertex b = new Vertex(Vector3.Lerp(vertices[triangle.v3].Position, vertices[triangle.v1].Position, 2 / 3f).normalized, this);
-            vertices.Add(b);
-    
-            Vertex f = new Vertex(Vector3.Lerp(vertices[triangle.v2].Position, vertices[triangle.v3].Position, 1 / 3f).normalized, this);
-            vertices.Add(f);
-    
-            Vertex g = new Vertex(Vector3.Lerp(vertices[triangle.v2].Position, vertices[triangle.v3].Position, 2 / 3f).normalized, this);
-            vertices.Add(g);
-    
-            //Vertex d =
-            //    new
-            //        Vertex(new Vector3(( vertices[triangle.v1].Position.x + vertices[triangle.v2].Position.x + vertices[triangle.v3].Position.x ) / 3, ( vertices[triangle.v1].Position.y + vertices[triangle.v2].Position.y + vertices[triangle.v3].Position.y ) / 3, ( vertices[triangle.v1].Position.z + vertices[triangle.v2].Position.z + vertices[triangle.v3].Position.z ) / 3).normalized,
-            //               this);
-    
-            Vertex d = new Vertex( new Vector3((b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x)/6, 
-                                     (b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y)/6,
-                                     (b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z)/6
-                                     ) * 1f, this);
-    
-            d.Position = new Vector3((float)Math.Round(d.Position.x, 1), (float)Math.Round(d.Position.y, 1), (float)Math.Round(d.Position.z, 1));
+            Vertex a = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 1 / 3f).normalized, this);
+            Vertices.Add(a);
+
+            Vertex c = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 2 / 3f).normalized, this);
+            Vertices.Add(c);
+
+            Vertex e = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 1 / 3f).normalized, this);
+            Vertices.Add(e);
+
+            Vertex b = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 2 / 3f).normalized, this);
+            Vertices.Add(b);
+
+            Vertex f = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 1 / 3f).normalized, this);
+            Vertices.Add(f);
+
+            Vertex g = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 2 / 3f).normalized, this);
+            Vertices.Add(g);
+
+            Vertex d =
+                new
+                    Vertex(new Vector3(( b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x ) / 6, ( b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y ) / 6, ( b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z ) / 6) * 1f,
+                           this);
+
+            d.Position = new Vector3((float) Math.Round(d.Position.x, 1), (float) Math.Round(d.Position.y, 1), (float) Math.Round(d.Position.z, 1));
             d.Position = Vector3.zero;
-            vertices.Add(d);
-            
-            toTruncate.Add(vertices[triangle.v1].Position);
-            toTruncate.Add(vertices[triangle.v2].Position);
-            toTruncate.Add(vertices[triangle.v3].Position);
-    
+            Vertices.Add(d);
+
+            toTruncate.Add(Vertices[triangle.v1].Position);
+            toTruncate.Add(Vertices[triangle.v2].Position);
+            toTruncate.Add(Vertices[triangle.v3].Position);
+
             newTriangles.Add(new Triangle(triangle.v1, a.vertexIndex, b.vertexIndex, newTriangles, this));
             newTriangles.Add(new Triangle(f.vertexIndex, c.vertexIndex, triangle.v2, newTriangles, this));
             newTriangles.Add(new Triangle(e.vertexIndex, g.vertexIndex, triangle.v3, newTriangles, this));
@@ -171,34 +182,23 @@ public class PlanetGenerator : MonoBehaviour
             Triangle tri6 = new Triangle(d.vertexIndex, c.vertexIndex, f.vertexIndex, newTriangles, this);
             newTriangles.Add(tri6);
 
-            Hexagon hex = new Hexagon(d, tri1,tri2,tri3,tri4,tri5,tri6,this);
+            Hexagon hex = new Hexagon(d, tri1, tri2, tri3, tri4, tri5, tri6, this);
             hexes.Add(hex);
         }
-    
+
         triangles = newTriangles;
 
         TruncatePentagons();
 
         foreach (var position in toTruncate)
         {
-            List<Triangle> triangles = vertexTriangles[position];
+            List<Triangle> triangles = VertexTriangles[position];
             if (triangles.Count == 6)
             {
-               // Hexagon hex = new Hexagon(FindVertex(position), triangles[0],triangles[1],triangles[2],triangles[3],triangles[4],triangles[5],this);
                 Vertex middle = FindVertex(position);
-                Hexagon hex = new Hexagon(middle, vertexTriangles[middle.Position], this);
+                Hexagon hex = new Hexagon(middle, VertexTriangles[middle.Position], this);
                 hexes.Add(hex);
             }
-
-
-            //Vector3 truncated = TruncateVertex(position, vertexTriangles[position]);
-            //foreach (var vertex in vertices)
-            //{
-            //    if (vertex.Position == position)
-            //    {
-            //        vertex.Position = truncated;
-            //    }
-            //}
         }
 
         foreach (var hex in hexes)
@@ -210,19 +210,52 @@ public class PlanetGenerator : MonoBehaviour
         {
             pent.TruncateVertex();
         }
-        //BuildMesh();
+
+        GameObject hexGo = Instantiate(hexTile, Vector3.zero, Quaternion.identity);
+        
+        Mesh mesh = hexGo.gameObject.GetComponent<MeshFilter>().mesh;
+        List<Vector3> verts = new List<Vector3>();
+        mesh.GetVertices(verts);
+        foreach (var vert in verts)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.transform.position = vert;
+            go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            Debug.Log(vert);
+        }
     }
+
+    #endregion
+
+    #region Public Methods
+
+    public int GetVertexIndex(Vector3 position)
+    {
+        for (int i = 0; i < Vertices.Count; i++)
+        {
+            if (Vertices[i].Position.Equals(position))
+            {
+                return Vertices[i].vertexIndex;
+            }
+        }
+
+        return -1;
+    }
+
+    #endregion
+
+    #region Private Methods
 
     private void TruncatePentagons()
     {
-        foreach (KeyValuePair<Vector3, List<Triangle>> entry in vertexTriangles)
+        foreach (KeyValuePair<Vector3, List<Triangle>> entry in VertexTriangles)
         {
             if (entry.Value.Count == 5)
             {
                 Pentagon pent = new Pentagon(FindVertex(entry.Key), entry.Value[0], entry.Value[1], entry.Value[2], entry.Value[3], entry.Value[4], this);
                 pentagons.Add(pent);
                 Vector3 truncated = TruncateVertex(entry.Key, entry.Value);
-                foreach (var vertex in vertices)
+                foreach (var vertex in Vertices)
                 {
                     if (vertex.Position == entry.Key)
                     {
@@ -243,7 +276,7 @@ public class PlanetGenerator : MonoBehaviour
         {
             foreach (int vertex in triangle.GetVertices())
             {
-                Vector3 position = vertices[vertex].Position;
+                Vector3 position = Vertices[vertex].Position;
                 if (position != entryKey)
                 {
                     count++;
@@ -253,7 +286,7 @@ public class PlanetGenerator : MonoBehaviour
                 }
             }
         }
-        
+
         Vector3 truncatedVertex = new Vector3();
 
         truncatedVertex.x = x / count;
@@ -262,115 +295,18 @@ public class PlanetGenerator : MonoBehaviour
         return truncatedVertex;
     }
 
-    #endregion
-
-    #region Private Methods
-
-    private void SpawnHex(Triangle triangle)
-    {
-        Vector3 v1 = vertices[triangle.v1].Position;
-        Vector3 v2 = vertices[triangle.v2].Position;
-        Vector3 v3 = vertices[triangle.v3].Position;
-
-        Vector3 middle = new Vector3(( v1.x + v2.x + v3.x ) / 3, ( v1.y + v2.y + v3.y ) / 3, ( v1.z + v2.z + v3.z ) / 3);
-
-        GameObject go = Instantiate(hexTile);
-        go.transform.localScale = Vector3.one * .3f;
-        go.transform.position = middle;
-        go.transform.LookAt(Vector3.zero);
-        go.transform.Rotate(transform.right, 90);
-        //go.transform.Rotate(transform.up, 90);
-    }
-
-    private void BuildMesh()
-    {
-        Mesh face = new Mesh();
-
-        List<Vector3> allVertices = new List<Vector3>();
-        foreach (var vertex in vertices)
-        {
-            allVertices.Add(vertex.Position);
-        }
-
-        face.vertices = allVertices.ToArray();
-
-        List<int> trianglesInts = new List<int>();
-        foreach (var triangle in triangles)
-        {
-            trianglesInts.AddRange(triangle.GetVertices());
-        }
-
-        face.triangles = trianglesInts.ToArray();
-
-       // var nVertices = face.vertices;
-       // Vector2[] UVs = new Vector2[nVertices.Length];
- //
-       // for(var i= 0; i < nVertices.Length; i++){
-       //     var unitVector = nVertices[i].normalized;
-       //     Vector2 ICOuv = new Vector2(0, 0);
-       //     ICOuv.x = (Mathf.Atan2(unitVector.x, unitVector.z) + Mathf.PI) / Mathf.PI / 2;
-       //     ICOuv.y = (Mathf.Acos(unitVector.y) + Mathf.PI) / Mathf.PI - 1;
-       //     UVs[i] = new Vector2(ICOuv.x, ICOuv.y);
-       // }
- //
-       // face.uv = UVs;
- 
-        //Vector3[] normales = new Vector3[ allVertices.Count];
-        //for( int i = 0; i < normales.Length; i++ )
-        //    normales[i] = allVertices[i].normalized;
- //
-        //face.normals = normales;
-      
-        face.RecalculateNormals();
-        face.Optimize();
-
-        GetComponent<MeshFilter>().mesh = face;
-        MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        meshRenderer.material = material;
-    }
-
     private Vertex FindVertex(Vector3 position)
     {
-        foreach (var vertex in vertices)
+        foreach (var vertex in Vertices)
         {
             if (vertex.Position == position)
             {
                 return vertex;
             }
         }
+
         return null;
     }
 
     #endregion
-
-    public struct Tris
-    {
-        public int v1;
-        public int v2;
-        public int v3;
-
-        #region Constructors
-
-        public Tris(int v1, int v2, int v3)
-        {
-            this.v1 = v1;
-            this.v2 = v2;
-            this.v3 = v3;
-        }
-
-        #endregion
-    }
-
-    public int GetVertexIndex(Vector3 position)
-    {
-        for (int i = 0; i < vertices.Count; i++)
-        {
-            if (vertices[i].Position.Equals(position))
-            {
-                return vertices[i].vertexIndex;
-            }
-        }
-        
-        return -1;
-    }
 }
