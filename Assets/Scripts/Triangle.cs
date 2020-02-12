@@ -18,7 +18,6 @@ public class Triangle
     public List<Triangle> neighbours;
     
     public List<Triangle> Neighbours { get => neighbours; set => neighbours = value; }
-    public List<Vertex> Vertices {get => new List<Vertex>(){a,b,c};}
 
     public int v1;
     public int v2;
@@ -34,15 +33,18 @@ public class Triangle
 
     public Triangle(int v1, int v2, int v3, List<Triangle> allTriangles, PlanetGenerator planetGenerator)
     {
-        this.v1 = v1; 
-        this.v2 = v2; 
+        this.v1 = v1;
+        this.v2 = v2;
         this.v3 = v3;
 
         trisIndex = allTriangles.Count;
-        
+
         AddToDictionary(v1, planetGenerator.VertexTriangles, planetGenerator.Vertices);
         AddToDictionary(v2, planetGenerator.VertexTriangles, planetGenerator.Vertices);
         AddToDictionary(v3, planetGenerator.VertexTriangles, planetGenerator.Vertices);
+
+        this.planetGenerator = planetGenerator;
+        //GenerateMesh();
     }
 
     private void AddToDictionary(int index, Dictionary<Vector3, List<Triangle>> vertexTriangles, List<Vertex> vertices)
@@ -61,6 +63,31 @@ public class Triangle
     public int[] GetVertices()
     {
         return new int[3]{ v1,v2,v3};
+    }
+    
+    public void GenerateMesh()
+    {
+        GameObject gameObject = new GameObject("Triangle");
+        Debug.Log($"{planetGenerator}");
+//        gameObject.transform.parent = planetGenerator.transform;
+        
+        Mesh mesh = new Mesh();
+
+        List<Vector3> allVertices = new List<Vector3>();
+
+        Vector3[] vertIndex = new[] { planetGenerator.Vertices[v1].Position,planetGenerator.Vertices[v2].Position,planetGenerator.Vertices[v3].Position }; 
+
+        int[] trianglesInts = { 0, 1, 2 };
+
+        mesh.vertices = vertIndex;
+        mesh.triangles = trianglesInts.ToArray();
+
+        mesh.RecalculateNormals();
+        mesh.Optimize();
+
+        gameObject.AddComponent<MeshFilter>().mesh = mesh;
+        MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        meshRenderer.material = planetGenerator.DefaultMaterial;
     }
     
     #endregion

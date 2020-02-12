@@ -29,6 +29,23 @@ public class Pentagon : MonoBehaviour
 
     #region Public Methods
 
+    public float GetEdgeLength()
+    {
+        Triangle triangle = triangles[0];
+        List<Vector3> vertices = new List<Vector3>();
+        foreach (var vert in triangle.GetVertices())
+        {
+            Vector3 vertex = generator.Vertices[vert].Position;
+            if (vertex != middle.Position)
+            {
+                vertices.Add(vertex);
+                Debug.Log(vertex);
+            }
+        }
+
+        return Vector3.Distance(vertices[0], vertices[1]);
+    }
+
     public void GenerateMesh()
     {
         GameObject gameObject = new GameObject("Pentagon");
@@ -89,7 +106,6 @@ public class Pentagon : MonoBehaviour
         truncatedVertex.z = z / count;
 
         middle.Position = truncatedVertex;
-        GenerateMesh();
     }
 
     #endregion

@@ -65,7 +65,6 @@ public class Hexagon : MonoBehaviour
         truncatedVertex.z = z / count;
 
         middle.Position = truncatedVertex;
-        GenerateMesh();
     }
 
     public void GenerateMesh()

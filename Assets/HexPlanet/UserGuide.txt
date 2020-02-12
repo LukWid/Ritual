@@ -1,0 +1,16 @@
+HEX PLANET USER GUIDE
+
+Thank you for purchasing HexPlanet!
+Operation is extremely simple and leaves tons of room for expansion and customization.  
+Simply load the scene called Main located in the Scenes folder and click on the HexSphere gameobject in the inspector.
+The detailLevel parameter allows you to specify the number of subdivisions, effectively setting the number of tiles on the planet.
+This can range from 1 up to 4, producing a number of tiles between 42 and 2,562.  
+The numColors parameter specifies the number of colors used to paint the tiles after theyre created.  You can specify the exact colors used within the Tile class.
+This parameter was used for a previous game I made and likely wont be too useful for a broader range of applications, but it can be easily changed or omitted if you want.
+Once youve specified a detailLevel, just make sure that the hexmat and pentmat material slots are assigned.  
+Ive included a default flat color material for each as well as a cutout material for each which gives a transparent border around each tile.  This creates a cool look for space or abstract games.
+Then hit play and look in awe at the procedurally generated hexplanet!
+
+Ive included a simple camera script which lets you rotate around the planet with WASD or arrow keys and zoom in/out with the mouse scroll wheel.
+Additionally there is a pointer script which controls the 3D cursor.  You can set the cursor status via an enum within the script.  This pointer status can be used to indicate if a an object under the mouse selection is busy or unselectable for example.
+
