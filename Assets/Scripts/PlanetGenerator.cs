@@ -124,89 +124,89 @@ public class PlanetGenerator : MonoBehaviour
             triangles = triangles2;
         }
 
-        List<Triangle> newTriangles = new List<Triangle>();
-        VertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
-
-        hexes = new List<Hexagon>();
-        pentagons = new List<Pentagon>();
-
-        foreach (var triangle in triangles)
-        {
-            Vertex a = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 1 / 3f), this);
-            Vertices.Add(a);
+        //List<Triangle> newTriangles = new List<Triangle>();
+        //VertexTriangles = new Dictionary<Vector3, List<Triangle>>(customComparer);
+//
+        //hexes = new List<Hexagon>();
+        //pentagons = new List<Pentagon>();
+//
+        //foreach (var triangle in triangles)
+        //{
+        //    Vertex a = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 1 / 3f), this);
+        //    Vertices.Add(a);
+        //
+        //    Vertex c = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 2 / 3f), this);
+        //    Vertices.Add(c);
+        //
+        //    Vertex e = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 1 / 3f), this);
+        //    Vertices.Add(e);
+        //
+        //    Vertex b = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 2 / 3f), this);
+        //    Vertices.Add(b);
+        //
+        //    Vertex f = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 1 / 3f), this);
+        //    Vertices.Add(f);
+        //
+        //    Vertex g = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 2 / 3f), this);
+        //    Vertices.Add(g);
+        //
+        //    Vertex d =
+        //        new Vertex(new Vector3(( b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x ) / 6, ( b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y ) / 6, ( b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z ) / 6),
+        //                   this);
+        //
+        //    //d.Position = new Vector3((float) Math.Round(d.Position.x, 1), (float) Math.Round(d.Position.y, 1), (float) Math.Round(d.Position.z, 1));
+        //    Vertices.Add(d);
+        //
+        //    toTruncate.Add(Vertices[triangle.v1].Position);
+        //    toTruncate.Add(Vertices[triangle.v2].Position);
+        //    toTruncate.Add(Vertices[triangle.v3].Position);
+        //
+        //    newTriangles.Add(new Triangle(triangle.v1, a.vertexIndex, b.vertexIndex, newTriangles, this));
+        //    newTriangles.Add(new Triangle(f.vertexIndex, c.vertexIndex, triangle.v2, newTriangles, this));
+        //    newTriangles.Add(new Triangle(e.vertexIndex, g.vertexIndex, triangle.v3, newTriangles, this));
+        //
+        //    Triangle tri1 = new Triangle(a.vertexIndex, c.vertexIndex, d.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri1);
+        //    Triangle tri2 = new Triangle(a.vertexIndex, d.vertexIndex, b.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri2);
+        //    Triangle tri3 = new Triangle(b.vertexIndex, d.vertexIndex, e.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri3);
+        //    Triangle tri4 = new Triangle(d.vertexIndex, g.vertexIndex, e.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri4);
+        //    Triangle tri5 = new Triangle(d.vertexIndex, f.vertexIndex, g.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri5);
+        //    Triangle tri6 = new Triangle(d.vertexIndex, c.vertexIndex, f.vertexIndex, newTriangles, this);
+        //    newTriangles.Add(tri6);
+        //
+        //    Hexagon hex = new Hexagon(d, tri1, tri2, tri3, tri4, tri5, tri6, this);
+        //    hexes.Add(hex);
+        //}
+        //
+        //triangles = newTriangles;
+//
+        //foreach (var position in toTruncate)
+        //{
+        //    List<Triangle> triangles = VertexTriangles[position];
+        //    if (triangles.Count == 6)
+        //    {
+        //        Vertex middle = FindVertex(position);
+        //        Hexagon hex = new Hexagon(middle, VertexTriangles[middle.Position], this);
+        //        hexes.Add(hex);
+        //    }
+        //}
         
-            Vertex c = new Vertex(Vector3.Lerp(Vertices[triangle.v1].Position, Vertices[triangle.v2].Position, 2 / 3f), this);
-            Vertices.Add(c);
-        
-            Vertex e = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 1 / 3f), this);
-            Vertices.Add(e);
-        
-            Vertex b = new Vertex(Vector3.Lerp(Vertices[triangle.v3].Position, Vertices[triangle.v1].Position, 2 / 3f), this);
-            Vertices.Add(b);
-        
-            Vertex f = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 1 / 3f), this);
-            Vertices.Add(f);
-        
-            Vertex g = new Vertex(Vector3.Lerp(Vertices[triangle.v2].Position, Vertices[triangle.v3].Position, 2 / 3f), this);
-            Vertices.Add(g);
-        
-            Vertex d =
-                new Vertex(new Vector3(( b.Position.x + a.Position.x + c.Position.x + f.Position.x + g.Position.x + e.Position.x ) / 6, ( b.Position.y + a.Position.y + c.Position.y + f.Position.y + g.Position.y + e.Position.y ) / 6, ( b.Position.z + a.Position.z + c.Position.z + f.Position.z + g.Position.z + e.Position.z ) / 6),
-                           this);
-        
-            //d.Position = new Vector3((float) Math.Round(d.Position.x, 1), (float) Math.Round(d.Position.y, 1), (float) Math.Round(d.Position.z, 1));
-            Vertices.Add(d);
-        
-            toTruncate.Add(Vertices[triangle.v1].Position);
-            toTruncate.Add(Vertices[triangle.v2].Position);
-            toTruncate.Add(Vertices[triangle.v3].Position);
-        
-            newTriangles.Add(new Triangle(triangle.v1, a.vertexIndex, b.vertexIndex, newTriangles, this));
-            newTriangles.Add(new Triangle(f.vertexIndex, c.vertexIndex, triangle.v2, newTriangles, this));
-            newTriangles.Add(new Triangle(e.vertexIndex, g.vertexIndex, triangle.v3, newTriangles, this));
-        
-            Triangle tri1 = new Triangle(a.vertexIndex, c.vertexIndex, d.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri1);
-            Triangle tri2 = new Triangle(a.vertexIndex, d.vertexIndex, b.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri2);
-            Triangle tri3 = new Triangle(b.vertexIndex, d.vertexIndex, e.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri3);
-            Triangle tri4 = new Triangle(d.vertexIndex, g.vertexIndex, e.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri4);
-            Triangle tri5 = new Triangle(d.vertexIndex, f.vertexIndex, g.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri5);
-            Triangle tri6 = new Triangle(d.vertexIndex, c.vertexIndex, f.vertexIndex, newTriangles, this);
-            newTriangles.Add(tri6);
-        
-            Hexagon hex = new Hexagon(d, tri1, tri2, tri3, tri4, tri5, tri6, this);
-            hexes.Add(hex);
-        }
-        
-        triangles = newTriangles;
-
-        foreach (var position in toTruncate)
-        {
-            List<Triangle> triangles = VertexTriangles[position];
-            if (triangles.Count == 6)
-            {
-                Vertex middle = FindVertex(position);
-                Hexagon hex = new Hexagon(middle, VertexTriangles[middle.Position], this);
-                hexes.Add(hex);
-            }
-        }
-        
-        CastIntoSphere();
-        
-        foreach (var hex in hexes)
-        {
-            hex.GenerateMesh();
-        }
-
-        TruncatePentagons();
-        foreach (var pent in pentagons)
-        {
-           pent.GenerateMesh();
-        }
+        //CastIntoSphere();
+        //
+        //foreach (var hex in hexes)
+        //{
+        //    hex.GenerateMesh();
+        //}
+//
+        //TruncatePentagons();
+        //foreach (var pent in pentagons)
+        //{
+        //   pent.GenerateMesh();
+        //}
 
         //float pentagonEdgeLength = pentagons[0].GetEdgeLength();
         //Debug.Log($"length = {pentagonEdgeLength}");
