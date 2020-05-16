@@ -19,23 +19,20 @@ public class TakeTiles : MonoBehaviour
 
     private void CollectTiles()
     {
-        var childrens = GetComponentsInChildren<MeshFilter>();
+        var children = GetComponentsInChildren<MeshFilter>();
         
-        foreach (var child in childrens)
+        foreach (var child in children)
         {
-//            Vector3 meshMiddle = CalculateMeshMiddle(child.mesh);
-            Vector3 meshMiddle = child.gameObject.GetComponent<Tile>().Center;
-            Debug.Log($"{meshMiddle}");
+            RaycastHit hit;
+            Vector3 meshMiddle = CalculateMeshMiddle(child.mesh);
             Vector3 direction = ( meshMiddle - transform.position).normalized;
-            RaycastHit[] hits;
+            //Vector3 raycastPoint = direction * 3;
             SpawnCube(meshMiddle, direction);
-            hits = Physics.RaycastAll(transform.position, direction, 100);
-            foreach (RaycastHit raycastHit in hits)
+            Debug.DrawRay(meshMiddle,-direction, Color.red, 30f);
+            if (Physics.Raycast(meshMiddle, direction, out hit, Mathf.Infinity))
             {
-                Debug.Log($"{raycastHit.transform.GetComponent<MeshFilter>().mesh.name}");
+                Debug.Log($"{hit.collider.name}");
             }
-            
-            Debug.Log($"==========");
         }
     }
 
