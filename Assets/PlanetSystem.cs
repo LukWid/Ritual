@@ -23,20 +23,20 @@ public class PlanetSystem : MonoBehaviour
 
     private void Start()
     {
+        Physics.queriesHitBackfaces = true;
         for (int i = 0; i < planets.Count-1; i++)
         {
             GameObject currentPlanet = planets[i].gameObject;
-            Debug.Log($"{currentPlanet}");
             CollectPlanetTiles(currentPlanet);
         }
     }
 
     private void CollectPlanetTiles(GameObject currentPlanet)
     {
-        var children = currentPlanet.GetComponentsInChildren<Tile>();
-        foreach (var child in children)
+        var planetTiles = currentPlanet.GetComponentsInChildren<Tile>();
+        foreach (var tile in planetTiles)
         {
-            GetNextTile(child, currentPlanet.transform);
+            GetNextTile(tile, currentPlanet.transform);
         }
     }
 
@@ -48,22 +48,23 @@ public class PlanetSystem : MonoBehaviour
     {
         RaycastHit hit;
         Mesh childMesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+        
         Vector3 meshMiddle = CalculateMeshMiddle(childMesh);
         Vector3 direction = ( meshMiddle - transform.position ).normalized;
 
         //SpawnCube(planet.transform.TransformPoint(meshMiddle), direction);
         
         meshMiddle = planet.transform.TransformPoint(meshMiddle);
-        Vector3 raycastStart = meshMiddle + direction * 0.01f;
+        Vector3 raycastStart = meshMiddle + direction * .005f;
         
-        //Debug.DrawRay(raycastStart, direction, Color.red, Mathf.Infinity);
+        Debug.DrawRay(raycastStart, direction, Color.red, Mathf.Infinity);
         
         if (Physics.Raycast(raycastStart, direction, out hit, Mathf.Infinity))
         {
             Tile hitTile = hit.collider.GetComponent<Tile>();
-           // tile.NextTile = hitTile;
+            tile.NextTile = hitTile;
             //hitTile.gameObject.SetActive(false);
-            hitTile.GetComponent<Renderer>().material = tile.GetComponent<Renderer>().material;
+            hitTile.GetComponent<Renderer>().sharedMaterial = tile.GetComponent<Renderer>().material;
         }
     }
 

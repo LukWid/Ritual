@@ -263,7 +263,6 @@ public class Hexsphere : MonoBehaviour
             tile.GetComponent<Tile>().Initialize(vertices[i]);
             tile.GetComponent<Renderer>().material.color = Color.white;
             tile.tag = "Tile";
-            tile.GetComponent<Tile>().setTileRadius(maxTileRadius);
             Tiles.Add(tile);
         }
     }
