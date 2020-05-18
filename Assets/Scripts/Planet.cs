@@ -40,4 +40,17 @@ public class Planet : MonoBehaviour
             AssetDatabase.SaveAssets();
         }
     }
+
+    public void CollectNextTiles()
+    {
+        if (planetTiles == null)
+        {
+            GetTiles();
+        }
+
+        foreach (var tile in planetTiles)
+        {
+            tile.GetNextTile();
+        }
+    }
 }

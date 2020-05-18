@@ -4,15 +4,15 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(Hexsphere))]
-public class ChangeChildrenMaterial : Editor
+public class HexsphereEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if (GUILayout.Button("ChangeColor"))
+        if (GUILayout.Button("Save into assets"))
         {
-            Hexsphere targetObject = (Hexsphere)target;
-            //targetObject.GetComponent<Hexsphere>().ChangeChildrenColor();
+            Hexsphere hexsphere = target as Hexsphere;
+            hexsphere.SaveMeshes();
         }
     }
 }

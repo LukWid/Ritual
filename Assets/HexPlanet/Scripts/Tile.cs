@@ -19,7 +19,7 @@ public class Tile : MonoBehaviour
     public Vector3 Center { get => center; set => center = value; }
     public Tile NextTile { get => nextTile; set => nextTile = value; }
     public Planet Planet { get; set; }
-    
+
     #endregion
 
     #region Unity Callbacks
@@ -48,7 +48,6 @@ public class Tile : MonoBehaviour
 
         Gizmos.color = Planet.EditorPlanetColor;
         Gizmos.DrawMesh(GetComponent<MeshFilter>().sharedMesh, Planet.transform.position, Planet.transform.rotation, Planet.transform.localScale);
-        
     }
 
     #endregion
@@ -63,6 +62,56 @@ public class Tile : MonoBehaviour
     public void SetMaterial(Material material)
     {
         GetComponent<Renderer>().sharedMaterial = material;
+    }
+
+    public void GetNextTile()
+    {
+        RaycastHit hit;
+
+        center = CalculateMeshMiddle();
+        Vector3 direction = ( center - transform.position ).normalized;
+
+        //SpawnCube(planet.transform.TransformPoint(meshMiddle), direction);
+
+        center = Planet.transform.TransformPoint(center);
+        Vector3 raycastStart = center + direction * .005f;
+
+        Debug.DrawRay(raycastStart, direction, Color.red, Mathf.Infinity);
+
+        if (Physics.Raycast(raycastStart, direction, out hit, Mathf.Infinity))
+        {
+            Tile hitTile = hit.collider.GetComponent<Tile>();
+            NextTile = hitTile;
+            
+            //Do some stuff to tile
+        }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private Vector3 CalculateMeshMiddle()
+    {
+        Vector3 middle = Vector3.zero;
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+
+        foreach (var vertex in mesh.vertices)
+        {
+            middle += vertex;
+        }
+
+        middle = middle / mesh.vertices.Length;
+
+        return middle;
+    }
+
+    private void SpawnCube(Vector3 position, Vector3 direction)
+    {
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.transform.localScale = Vector3.one * 0.2f;
+        cube.transform.position = position;
+        cube.transform.rotation = Quaternion.LookRotation(direction, transform.up);
     }
 
     #endregion

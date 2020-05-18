@@ -17,6 +17,14 @@ namespace Editor
                 planet.GetTiles();
             }
             
+            if (GUILayout.Button("Collect next tiles position"))
+            {
+                Planet planet = target as Planet;
+                planet.CollectNextTiles();
+            }
+            
+            GUILayout.Space(20);
+            
             if (GUILayout.Button("Save tiles meshes into assets"))
             {
                 Planet planet = target as Planet;
