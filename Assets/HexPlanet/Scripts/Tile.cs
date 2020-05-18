@@ -10,6 +10,10 @@ public class Tile : MonoBehaviour
 
     [SerializeField]
     private Tile nextTile;
+    [SerializeField]
+    private Tile previousTile;
+    [SerializeField]
+    private Planet planet;
 
     #endregion
 
@@ -18,7 +22,9 @@ public class Tile : MonoBehaviour
     //Tile Attributes
     public Vector3 Center { get => center; set => center = value; }
     public Tile NextTile { get => nextTile; set => nextTile = value; }
-    public Planet Planet { get; set; }
+    public Planet Planet { get => planet; set => planet = value; }
+    public Tile PreviousTile { get => previousTile; set => previousTile = value; }
+    public Color EditorPlanetColor;
 
     #endregion
 
@@ -41,12 +47,7 @@ public class Tile : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (Planet == null)
-        {
-            return;
-        }
-
-        Gizmos.color = Planet.EditorPlanetColor;
+        Gizmos.color = EditorPlanetColor;
         Gizmos.DrawMesh(GetComponent<MeshFilter>().sharedMesh, Planet.transform.position, Planet.transform.rotation, Planet.transform.localScale);
     }
 
@@ -68,21 +69,23 @@ public class Tile : MonoBehaviour
     {
         RaycastHit hit;
 
+        Vector3 planetCenter = Planet.transform.position;
         center = CalculateMeshMiddle();
-        Vector3 direction = ( center - transform.position ).normalized;
+        Vector3 direction = (center - planetCenter).normalized;
 
-        //SpawnCube(planet.transform.TransformPoint(meshMiddle), direction);
+        //SpawnCube(center, direction);
 
-        center = Planet.transform.TransformPoint(center);
-        Vector3 raycastStart = center + direction * .005f;
+        Vector3 raycastStart = center + direction * 0.005f;
 
-        Debug.DrawRay(raycastStart, direction, Color.red, Mathf.Infinity);
+        Debug.DrawRay(raycastStart, direction, Color.red, .01f);
 
         if (Physics.Raycast(raycastStart, direction, out hit, Mathf.Infinity))
         {
             Tile hitTile = hit.collider.GetComponent<Tile>();
             NextTile = hitTile;
-            
+            hitTile.PreviousTile = this;
+            hitTile.EditorPlanetColor = EditorPlanetColor;
+
             //Do some stuff to tile
         }
     }
@@ -94,7 +97,7 @@ public class Tile : MonoBehaviour
     private Vector3 CalculateMeshMiddle()
     {
         Vector3 middle = Vector3.zero;
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        Mesh mesh = GetComponent<MeshFilter>().sharedMesh;
 
         foreach (var vertex in mesh.vertices)
         {
@@ -103,7 +106,7 @@ public class Tile : MonoBehaviour
 
         middle = middle / mesh.vertices.Length;
 
-        return middle;
+        return middle * Planet.transform.localScale.x;
     }
 
     private void SpawnCube(Vector3 position, Vector3 direction)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class PlanetSystem : MonoBehaviour
@@ -6,7 +7,7 @@ public class PlanetSystem : MonoBehaviour
     #region Serialized Fields
 
     [SerializeField]
-    private List<Hexsphere> planets;
+    private List<Planet> planets;
 
     [SerializeField]
     private int currentIteration;
@@ -25,14 +26,27 @@ public class PlanetSystem : MonoBehaviour
     {
         Physics.queriesHitBackfaces = true;
     }
+    
+    void OnSceneGUI () {
+        Handles.BeginGUI();
+ 
+        if (GUI.Button(new Rect(10, 10, 100, 50), "Button"))
+        {
+            Debug.Log("Pressed");
+        }
+   
+        Handles.EndGUI();
+    }
 
     #endregion
 
-    #region Private Methods
-
-    
-    
-    
-
-    #endregion
+    public void ShowIteration(int index)
+    {
+        foreach (Planet planet in planets)
+        {
+            planet.gameObject.SetActive(false);   
+        }
+        
+        planets[index].gameObject.SetActive(true);
+    }
 }

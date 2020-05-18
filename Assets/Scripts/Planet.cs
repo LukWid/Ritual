@@ -21,7 +21,12 @@ public class Planet : MonoBehaviour
     public void GetTiles()
     {
         planetTiles = GetComponentsInChildren<Tile>().ToList();
-        planetTiles.ForEach(tile => tile.Planet = this);
+        foreach (var tile in planetTiles)
+        {
+            tile.Planet = this;
+            tile.EditorPlanetColor = editorPlanetColor;
+            tile.GetComponent<MeshCollider>().sharedMesh = tile.GetComponent<MeshFilter>().sharedMesh;
+        }
     }
 
     public void SaveMeshes()

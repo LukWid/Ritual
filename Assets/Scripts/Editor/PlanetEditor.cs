@@ -15,12 +15,14 @@ namespace Editor
             {
                 Planet planet = target as Planet;
                 planet.GetTiles();
+                Debug.Log($"Tiles collected.");
             }
             
             if (GUILayout.Button("Collect next tiles position"))
             {
                 Planet planet = target as Planet;
                 planet.CollectNextTiles();
+                Debug.Log($"Collected next tiles");
             }
             
             GUILayout.Space(20);
@@ -29,6 +31,7 @@ namespace Editor
             {
                 Planet planet = target as Planet;
                 planet.SaveMeshes();
+                Debug.Log($"Saved int assets.");
             }
         }
 
