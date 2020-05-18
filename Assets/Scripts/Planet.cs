@@ -59,4 +59,12 @@ public class Planet : MonoBehaviour
             tile.GetNextTile();
         }
     }
+
+    public void MorphPlanet()
+    {
+        foreach (var tile in planetTiles)
+        {
+            tile.MorphToNextTile();
+        }
+    }
 }

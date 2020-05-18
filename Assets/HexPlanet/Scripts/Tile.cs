@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using DG.Tweening;
+using UnityEngine;
 
 //Hex Sphere Tile
 public class Tile : MonoBehaviour
@@ -14,10 +16,23 @@ public class Tile : MonoBehaviour
     private Tile previousTile;
     [SerializeField]
     private Planet planet;
-    [SerializeField]
-    private Quaternion tileRotation;
-    
+
     #endregion
+
+    #region Private Fields
+
+    private Quaternion tileRotation;
+
+    private Mesh originalMesh;
+    [SerializeField]
+    private Mesh tileMesh;
+    private Vector3[] vertices;
+    private int[] triangles;
+
+    #endregion
+
+    public Color EditorPlanetColor;
+    private MeshCollider meshCollider;
 
     #region Public Properties
 
@@ -26,7 +41,7 @@ public class Tile : MonoBehaviour
     public Planet Planet { get => planet; set => planet = value; }
     public Tile PreviousTile { get => previousTile; set => previousTile = value; }
     public Quaternion TileRotation { get => tileRotation; set => tileRotation = value; }
-    public Color EditorPlanetColor;
+    public Mesh TileMesh => tileMesh;
 
     #endregion
 
@@ -34,17 +49,18 @@ public class Tile : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        Pointer.instance.setPointer(PointerStatus.TILE, Center);
+//        Pointer.instance.setPointer(PointerStatus.TILE, Center);
     }
 
     private void OnMouseExit()
     {
-        Pointer.instance.unsetPointer();
+  //      Pointer.instance.unsetPointer();
     }
 
     private void Awake()
     {
-        GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
+        meshCollider = GetComponent<MeshCollider>();
+        meshCollider.sharedMesh = GetComponent<MeshFilter>().mesh;
     }
 
     private void OnDrawGizmos()
@@ -56,6 +72,11 @@ public class Tile : MonoBehaviour
     #endregion
 
     #region Public Methods
+
+    private void Start()
+    {
+        CloneMesh();
+    }
 
     public void Initialize()
     {
@@ -73,22 +94,20 @@ public class Tile : MonoBehaviour
         RaycastHit hit;
 
         Vector3 planetCenter = Planet.transform.position;
-        Vector3 direction = (center - planetCenter).normalized;
+        Vector3 direction = ( center - planetCenter ).normalized;
 
         //SpawnCube(center, direction);
 
-        Vector3 raycastStart = center + direction * 0.005f;
+        Vector3 rayCastStart = center + direction * 0.005f;
 
-        Debug.DrawRay(raycastStart, direction, Color.red, .01f);
+        Debug.DrawRay(rayCastStart, direction, Color.red, .01f);
 
-        if (Physics.Raycast(raycastStart, direction, out hit, Mathf.Infinity))
+        if (Physics.Raycast(rayCastStart, direction, out hit, Mathf.Infinity))
         {
             Tile hitTile = hit.collider.GetComponent<Tile>();
             NextTile = hitTile;
             hitTile.PreviousTile = this;
             hitTile.EditorPlanetColor = EditorPlanetColor;
-
-            //Do some stuff to tile
         }
     }
 
@@ -96,11 +115,30 @@ public class Tile : MonoBehaviour
 
     #region Private Methods
 
+    private void CloneMesh()
+    {
+        var meshFilter = GetComponent<MeshFilter>();
+        originalMesh = meshFilter.sharedMesh;
+        tileMesh = new Mesh
+        {
+            name = "Cloned",
+            vertices = originalMesh.vertices,
+            triangles = originalMesh.triangles,
+            normals = originalMesh.normals,
+            uv = originalMesh.uv
+        };
+
+        meshFilter.mesh = TileMesh;
+
+        vertices = TileMesh.vertices;
+        triangles = TileMesh.triangles;
+    }
+
     private Quaternion GetTileRotation()
     {
         Vector3 planetCenter = Planet.transform.position;
         center = CalculateMeshMiddle();
-        Vector3 direction = (center - planetCenter).normalized;
+        Vector3 direction = ( center - planetCenter ).normalized;
 
         return Quaternion.LookRotation(direction, transform.up);
     }
@@ -120,12 +158,44 @@ public class Tile : MonoBehaviour
         return middle * Planet.transform.localScale.x;
     }
 
+    public void MorphToNextTile()
+    {
+        var thisVertices = tileMesh.vertices;
+        var targetVertices = NextTile.tileMesh.vertices;
+        
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        StartCoroutine(SmoothTransition(thisVertices, targetVertices, mesh));
+    }
+
     private void SpawnCube(Vector3 position, Vector3 direction)
     {
         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cube.transform.localScale = Vector3.one * 0.2f;
         cube.transform.position = position;
         cube.transform.rotation = Quaternion.LookRotation(direction, transform.up);
+    }
+
+    private IEnumerator SmoothTransition(Vector3[] thisVertices, Vector3[] targetVertices, Mesh mesh)
+    {
+        for (int t = 0; t < 100; t++)
+        {
+            for (int i = 0; i < thisVertices.Length; i++)
+            {
+                Vector3 from = transform.TransformPoint(thisVertices[i]);
+                Vector3 to = nextTile.transform.TransformPoint(targetVertices[i]);
+
+                Vector3 between = Vector3.Lerp(from, to, t / 100.0f);
+
+                thisVertices[i] = transform.InverseTransformPoint(between);
+            }
+
+            mesh.vertices = thisVertices;
+            mesh.RecalculateNormals();
+            meshCollider.sharedMesh = null;
+            meshCollider.sharedMesh = mesh;
+
+            yield return null;
+        }
     }
 
     #endregion

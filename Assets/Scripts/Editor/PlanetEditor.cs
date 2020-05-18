@@ -25,6 +25,13 @@ namespace Editor
                 Debug.Log($"Collected next tiles");
             }
             
+            if (GUILayout.Button("Morph planet"))
+            {
+                Planet planet = target as Planet;
+                planet.MorphPlanet();
+                Debug.Log($"Planet is morphing.");
+            }
+            
             GUILayout.Space(20);
             
             if (GUILayout.Button("Save tiles meshes into assets"))
