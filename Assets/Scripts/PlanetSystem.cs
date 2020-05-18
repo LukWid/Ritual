@@ -46,7 +46,8 @@ public class PlanetSystem : MonoBehaviour
         {
             planet.gameObject.SetActive(false);   
         }
-        
+
+        currentIteration = index;
         planets[index].gameObject.SetActive(true);
     }
 }
