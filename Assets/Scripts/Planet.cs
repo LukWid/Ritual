@@ -26,6 +26,7 @@ public class Planet : MonoBehaviour
             tile.Planet = this;
             tile.EditorPlanetColor = editorPlanetColor;
             tile.GetComponent<MeshCollider>().sharedMesh = tile.GetComponent<MeshFilter>().sharedMesh;
+            tile.Initialize();
         }
     }
 

@@ -260,7 +260,6 @@ public class Hexsphere : MonoBehaviour
             tile.AddComponent<MeshCollider>();
             tile.transform.parent = transform;
             tile.isStatic = true;
-            tile.GetComponent<Tile>().Initialize(vertices[i]);
             tile.GetComponent<Renderer>().material.color = Color.white;
             tile.tag = "Tile";
             Tiles.Add(tile);

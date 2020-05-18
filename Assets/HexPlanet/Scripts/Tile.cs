@@ -14,16 +14,18 @@ public class Tile : MonoBehaviour
     private Tile previousTile;
     [SerializeField]
     private Planet planet;
-
+    [SerializeField]
+    private Quaternion tileRotation;
+    
     #endregion
 
     #region Public Properties
 
-    //Tile Attributes
     public Vector3 Center { get => center; set => center = value; }
     public Tile NextTile { get => nextTile; set => nextTile = value; }
     public Planet Planet { get => planet; set => planet = value; }
     public Tile PreviousTile { get => previousTile; set => previousTile = value; }
+    public Quaternion TileRotation { get => tileRotation; set => tileRotation = value; }
     public Color EditorPlanetColor;
 
     #endregion
@@ -55,9 +57,10 @@ public class Tile : MonoBehaviour
 
     #region Public Methods
 
-    public void Initialize(Vector3 coordinates)
+    public void Initialize()
     {
-        Center = coordinates;
+        Center = CalculateMeshMiddle();
+        TileRotation = GetTileRotation();
     }
 
     public void SetMaterial(Material material)
@@ -70,7 +73,6 @@ public class Tile : MonoBehaviour
         RaycastHit hit;
 
         Vector3 planetCenter = Planet.transform.position;
-        center = CalculateMeshMiddle();
         Vector3 direction = (center - planetCenter).normalized;
 
         //SpawnCube(center, direction);
@@ -93,6 +95,15 @@ public class Tile : MonoBehaviour
     #endregion
 
     #region Private Methods
+
+    private Quaternion GetTileRotation()
+    {
+        Vector3 planetCenter = Planet.transform.position;
+        center = CalculateMeshMiddle();
+        Vector3 direction = (center - planetCenter).normalized;
+
+        return Quaternion.LookRotation(direction, transform.up);
+    }
 
     private Vector3 CalculateMeshMiddle()
     {
